@@ -1,3 +1,3 @@
 #pragma once
 
-int ConexaoRawSocket(char *device);
+int ConexaoRawSocket(char *device, size_t len);

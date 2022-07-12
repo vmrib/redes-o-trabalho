@@ -9,7 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 
-int ConexaoRawSocket(char *device)
+int ConexaoRawSocket(char *device, size_t len)
 {
   int soquete;
   struct ifreq ir;
@@ -25,7 +25,7 @@ int ConexaoRawSocket(char *device)
   }
 
   memset(&ir, 0, sizeof(struct ifreq)); /*dispositivo eth0*/
-  memcpy(ir.ifr_name, device, sizeof(device));
+  memcpy(ir.ifr_name, device, sizeof(char) * len);
   if (ioctl(soquete, SIOCGIFINDEX, &ir) == -1)
   {
     printf("Erro no ioctl\n");

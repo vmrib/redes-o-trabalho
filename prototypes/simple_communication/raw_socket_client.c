@@ -6,12 +6,12 @@
 
 int main(int argc, char const *argv[])
 {
-    int teste = ConexaoRawSocket("lo", 2);
+    int teste = ConexaoRawSocket("lo");
     char buf[1024];
 
-    memcpy(buf, "Teste de envio de mensagem bem simples", 40);
+    memcpy(buf, "Teste de envio de mensagem bem simples", 39);
 
-    if (write(teste, buf, 1024 * sizeof(char)) == 1)
+    if (write(teste, buf, 1024 * sizeof(char)) == -1)
     {
         perror("Write Error");
         exit(-1);

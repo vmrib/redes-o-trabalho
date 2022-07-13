@@ -5,7 +5,7 @@
 
 int main(int argc, char const *argv[])
 {
-    int teste = ConexaoRawSocket("lo", 2);
+    int teste = ConexaoRawSocket("lo");
     char buf[1024];
 
     if (read(teste, buf, 1024 * sizeof(char)) == -1)

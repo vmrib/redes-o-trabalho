@@ -56,6 +56,15 @@ int rs_socket(char *device)
         exit(-1);
     }
 
+    // int wat = 10;
+
+    // if (setsockopt(soquete, SOL_SOCKET, SO_SNDBUF, &wat, sizeof(wat)))
+    // {
+    //     printf("Erro ao fazer setsockopt\n");
+    //     perror("Error");
+    //     exit(-1);
+    // }
+
     return soquete;
 }
 
@@ -91,4 +100,9 @@ void rs_recv(int sockfd, void *data, size_t bytes)
         perror("Error");
         exit(-1);
     }
+}
+
+void rs_close(int sockfd)
+{
+    close(sockfd);
 }

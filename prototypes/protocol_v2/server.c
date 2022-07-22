@@ -7,10 +7,15 @@ int main(int argc, char const *argv[])
 {
     int socket = rs_socket("lo");
     char buf[1024];
-    packet_config_t c;
+    packet_options_t c;
 
     rs_set_timeout(socket, (uint)2e6);
-    packet_recv(socket, buf, &c);
+
+    if (packet_recv(socket, buf, &c) == -1)
+    {
+        perror("Error");
+        return 1;
+    }
 
     printf("Mensagem recebida: %s\n", buf);
 

@@ -8,7 +8,7 @@ int main(int argc, char const *argv[])
     int socket = rs_socket("lo");
     char *buf = "teste";
 
-    packet_config_t c = {
+    packet_options_t c = {
         .size = strlen(buf) + 1,
         .type = DATA,
         .index = 0,

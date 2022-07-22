@@ -1,5 +1,8 @@
 #pragma once
 
+#define RETURN_SUCCESS 0
+#define RETURN_ERROR -1
+
 #define TRY(expr)         \
     do                    \
     {                     \

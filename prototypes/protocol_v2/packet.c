@@ -2,11 +2,10 @@
 
 #include "debug.h"
 #include "error.h"
-#include "protocol.h"
+#include "packet.h"
 #include "raw_socket.h"
 
 #define PACKET_START_MARKER 0b01111110
-#define PACKET_DATA_MAX_SIZE 64
 
 typedef struct envelope_t
 {

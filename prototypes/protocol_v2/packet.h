@@ -2,6 +2,8 @@
 
 #include <sys/types.h>
 
+#define PACKET_DATA_MAX_SIZE 64
+
 typedef enum packet_t
 {
     ACK = 0b000011,

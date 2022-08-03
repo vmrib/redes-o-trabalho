@@ -4,6 +4,15 @@
 
 #define PACKET_DATA_MAX_SIZE 64
 
+#define PACKET_ACK(sockfd, index) \
+    packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = ACK})
+
+#define PACKET_NACK(sockfd, index) \
+    packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = NACK})
+
+#define PACKET_OK(sockfd, index) \
+    packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = OK})
+
 typedef enum packet_t
 {
     ACK = 0b000011,
@@ -31,3 +40,11 @@ typedef struct packet_options_t
 int packet_send(int sockfd, void *data, packet_options_t options);
 
 int packet_recv(int sockfd, void *data, packet_options_t *options);
+
+int packet_ack(int sockfd, uint index);
+
+int packet_nack(int sockfd, uint index);
+
+int packet_ok(int sockfd, uint index);
+
+int packet_error(int sockfd, char *desc, uint index);

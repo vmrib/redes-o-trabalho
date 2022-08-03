@@ -1,19 +1,20 @@
 #include "raw_socket.h"
 #include "packet.h"
+#include "prot_client.h"
 #include <string.h>
 #include <stdio.h>
 
 int main(int argc, char const *argv[])
 {
     int socket = rs_socket("lo");
-    char *buf = "teste";
+    char *dirname = "teste";
 
-    packet_options_t c = {
-        .size = strlen(buf) + 1,
-        .type = DATA,
-        .index = 0,
-    };
-    if (packet_send(socket, buf, c) == -1)
+    if (rs_set_timeout(socket, 500000000) == -1)
+    {
+        return 1;
+    }
+
+    if (protc_cd(socket, dirname) == -1)
     {
         perror("Error");
         return 1;

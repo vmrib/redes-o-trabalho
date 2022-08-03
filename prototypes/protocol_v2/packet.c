@@ -64,3 +64,51 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
 
     return RETURN_SUCCESS;
 }
+
+int packet_ack(int sockfd, uint index)
+{
+    packet_options_t opt = {
+        .index = index,
+        .size = 0,
+        .type = ACK,
+    };
+    TRY(packet_send(sockfd, NULL, opt));
+
+    return RETURN_SUCCESS;
+}
+
+int packet_nack(int sockfd, uint index)
+{
+    packet_options_t opt = {
+        .index = index,
+        .size = 0,
+        .type = NACK,
+    };
+    TRY(packet_send(sockfd, NULL, opt));
+
+    return RETURN_SUCCESS;
+}
+
+int packet_ok(int sockfd, uint index)
+{
+    packet_options_t opt = {
+        .index = index,
+        .size = 0,
+        .type = OK,
+    };
+    TRY(packet_send(sockfd, NULL, opt));
+
+    return RETURN_SUCCESS;
+}
+
+int packet_error(int sockfd, char *description, uint index)
+{
+    packet_options_t opt = {
+        .index = index,
+        .size = strlen(description) + 1,
+        .type = ERROR,
+    };
+    TRY(packet_send(sockfd, description, opt));
+
+    return RETURN_SUCCESS;
+}

@@ -18,6 +18,7 @@ int main(int argc, char const *argv[])
     }
 
     printf("Mensagem recebida: %s\n", buf);
+    printf("Tamanho: %u\n Tipo: %u \n Index = %u\n", c.size, c.type, c.index);
 
     rs_close(socket);
 

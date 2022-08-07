@@ -10,7 +10,7 @@ int main(int argc, char const *argv[])
 
     packet_options_t c = {
         .size = strlen(buf) + 1,
-        .type = DATA,
+        .type = DATA, // packet_t.DATA?
         .index = 0,
     };
     if (packet_send(socket, buf, c) == -1)

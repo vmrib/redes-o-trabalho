@@ -22,8 +22,8 @@ const size_t PACKET_MAX_SIZE = sizeof(envelope_t) + PACKET_DATA_MAX_SIZE;
 uint calc_parity(void *data, size_t size)
 {
     char parity = 0;
-    char *string = (char*)data;
-    for(int i=0; i < size; i++)
+    char *string = (char *)data;
+    for (int i = 0; i < size; i++)
     {
         parity ^= string[i];
     }
@@ -61,6 +61,10 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
 {
     envelope_t env;
     char buf[PACKET_DATA_MAX_SIZE];
+
+#ifndef NDEBUG
+    TRY(rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE)); // descarta echo do loopback
+#endif
 
     TRY(rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE));
 

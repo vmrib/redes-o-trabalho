@@ -40,6 +40,11 @@ int packet_send(int sockfd, void *data, packet_options_t options)
     memcpy(buf + sizeof(envelope_t) - 1, data, options.size);
     buf[sizeof(envelope_t) - 1 + options.size] = env.parity;
 
+    // for (size_t i = 0; i < buf_size; i++)
+    // {
+    //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
+    // }
+
     TRY(rs_send(sockfd, buf, buf_size));
 
     return RETURN_SUCCESS;
@@ -50,17 +55,31 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     envelope_t env;
     char buf[PACKET_DATA_MAX_SIZE];
 
-    TRY(rs_recv(sockfd, data, PACKET_DATA_MAX_SIZE));
+    TRY(rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE));
+
+    // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
+    // {
+    //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
+    // }
 
     memcpy(&env, buf, sizeof(envelope_t) - 1);
     if (env.start_marker != PACKET_START_MARKER)
+    {
+        // debug((uint)env.start_marker);
         return RETURN_ERROR;
+    }
 
     env.parity = buf[env.size + sizeof(envelope_t) - 1];
     if (env.parity != calc_parity(buf + sizeof(envelope_t) - 1, env.size))
+    {
+        // debug((uint)env.parity);
         return RETURN_ERROR;
+    }
 
     memcpy(data, buf + sizeof(envelope_t) - 1, env.size);
+    options->size = env.size;
+    options->type = env.type;
+    options->index = env.sequence;
 
     return RETURN_SUCCESS;
 }

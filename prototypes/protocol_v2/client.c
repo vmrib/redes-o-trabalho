@@ -6,13 +6,16 @@
 
 int main(int argc, char const *argv[])
 {
+    packet_options_t opt;
     int socket = rs_socket("lo");
     char *dirname = "teste";
 
-    if (rs_set_timeout(socket, 500000000) == -1)
-    {
-        return 1;
-    }
+    rs_set_timeout(socket, (uint)5e6);
+
+    // opt.index = 0;
+    // opt.size = strlen(dirname) + 1;
+    // opt.type = CD;
+    // packet_send(socket, dirname, opt);
 
     if (protc_cd(socket, dirname) == -1)
     {

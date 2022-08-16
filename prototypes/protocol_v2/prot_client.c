@@ -4,6 +4,7 @@
 #include "prot_client.h"
 #include "packet.h"
 #include "error.h"
+#include "debug.h"
 
 int protc_cd(int sockfd, char *dirname)
 {
@@ -22,7 +23,10 @@ int protc_cd(int sockfd, char *dirname)
     } while (opt.type == NACK);
 
     if (opt.type == ERROR || opt.type != OK)
+    {
+        debug((uint)opt.type);
         return RETURN_ERROR;
+    }
 
     return RETURN_SUCCESS;
 }

@@ -9,7 +9,7 @@ int main(int argc, char const *argv[])
     char buf[1024];
     packet_options_t c;
 
-    rs_set_timeout(socket, (uint)2e6);
+    rs_set_timeout(socket, (uint)5e6);
 
     if (packet_recv(socket, buf, &c) == -1)
     {
@@ -18,7 +18,9 @@ int main(int argc, char const *argv[])
     }
 
     printf("Mensagem recebida: %s\n", buf);
-    printf("Tamanho: %u\n Tipo: %u \n Index = %u\n", c.size, c.type, c.index);
+    printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", c.size, c.type, c.index);
+
+    packet_ok(socket, 0);
 
     rs_close(socket);
 

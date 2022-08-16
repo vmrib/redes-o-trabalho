@@ -21,7 +21,14 @@ const size_t PACKET_MAX_SIZE = sizeof(envelope_t) + PACKET_DATA_MAX_SIZE;
 
 uint calc_parity(void *data, size_t size)
 {
-    return 0;
+    char parity = 0;
+    char *string = (char*)data;
+    for(int i=0; i < size; i++)
+    {
+        parity ^= string[i];
+    }
+    // printf("%c\n", parity);
+    return parity;
 }
 
 int packet_send(int sockfd, void *data, packet_options_t options)

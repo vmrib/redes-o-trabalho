@@ -62,6 +62,7 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
         // path[strlen(path)-1] = '    ';
         printf("outro\n");
         s_index++;
+        printf("index: %d\n", s_index);
         do
         {
             printf("mandou\n");
@@ -74,13 +75,19 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
             // while (packet_recv(sockfd, buf, &opt) == -1){}
             while(opt.type == SHOW){
                 while (packet_recv(sockfd, buf, &opt) == -1){}
+                printf("Mensagem recebida: %s\n", buf);
+                printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+                s_index = opt.index;
+                printf("index: %d\n", s_index);
                 // if(opt.type == SHOW) continue;
             }
+            // s_index++;
         } while (opt.type != ACK); // timeout
     }
 
-    TRY(packet_end(sockfd, 0));
+    TRY(packet_end(sockfd, s_index));
     s_index++;
+    printf("index: %d\n", s_index);
 
     /* close */
     pclose(fp);

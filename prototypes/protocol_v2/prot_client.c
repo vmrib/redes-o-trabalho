@@ -22,14 +22,14 @@ int protc_cd(int sockfd, char *dirname)
         opt.type = CD;
         TRY(packet_send(sockfd, dirname, opt));
 
-        while(opt.type == CD){
-            while (packet_recv(sockfd, buf, &opt) == -1){}
+        while(opt.index == c_index){
+            TRY(packet_recv(sockfd, buf, &opt));
         }
         // TRY(packet_recv(sockfd, buf, &opt));
 
     } while (opt.type == NACK); // timeout?
 
-    // c_index++; // se funcionou
+    c_index++; // se funcionou
 
     if (opt.type == ERROR || opt.type != OK)
     {
@@ -44,7 +44,7 @@ int protc_ls(int sockfd, char *arg)
 {
     packet_options_t opt;
     char buf[PACKET_DATA_MAX_SIZE];
-
+    printf("index: %d\n", c_index);
     do
     {
         opt.index = c_index;
@@ -53,12 +53,17 @@ int protc_ls(int sockfd, char *arg)
         TRY(packet_send(sockfd, arg, opt));
 
         while(opt.type == LS){
-            while (packet_recv(sockfd, buf, &opt) == -1){}
+            TRY(packet_recv(sockfd, buf, &opt));
+            printf("Mensagem recebida: %s\n", buf);
+            printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+            c_index = opt.index;
+            printf("index: %d\n", c_index);
         }
         // TRY(packet_recv(sockfd, buf, &opt));
     } while (opt.type == NACK); // timeout
 
-    // c_index++;
+    c_index++;
+    printf("index: %d\n", c_index);
 
     // printf("CLIENTE\n");
     if (opt.type == ERROR) //|| opt.type != OK)
@@ -77,9 +82,14 @@ int protc_ls(int sockfd, char *arg)
         if (opt.type == ACK)
         {
             // printf("pegou o proprio\n");
-            while (packet_recv(sockfd, buf, &opt) == -1){}
+            TRY(packet_recv(sockfd, buf, &opt));
             continue;
         }
+
+        c_index = opt.index;
+        printf("Mensagem recebida: %s\n", buf);
+        printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+        printf("index: %d\n", c_index);
 
         // printf("tipo: %d\n", opt.type);
 
@@ -90,10 +100,14 @@ int protc_ls(int sockfd, char *arg)
             return -1;
 
         printf("%s", buf); // opt.type == SHOW
-        TRY(packet_ack(sockfd, 0));
+        TRY(packet_ack(sockfd, c_index));
+        c_index++;
+        printf("index: %d\n", c_index);
 
         // while (packet_recv(sockfd, buf, &opt) != -1){printf("ali\n");}
-        while (packet_recv(sockfd, buf, &opt) == -1){}
+        TRY(packet_recv(sockfd, buf, &opt));
+        c_index = opt.index;
+        printf("index: %d\n", c_index);
 
         // TRY(packet_ok(sockfd, 0));
     }
@@ -117,7 +131,7 @@ int protc_mkdir(int sockfd, char *dirname)
 
     } while (opt.type == NACK);
 
-    // c_index++;
+    c_index++;
 
     if (opt.type == ERROR || opt.type != OK)
         return RETURN_ERROR;

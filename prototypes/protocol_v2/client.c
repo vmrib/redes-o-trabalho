@@ -1,14 +1,16 @@
 #include "raw_socket.h"
 #include "packet.h"
 #include "prot_client.h"
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+
+// uint c_index = 0;
 
 int main(int argc, char const *argv[])
 {
     packet_options_t p_opt;
     int socket = rs_socket("lo");
-    char *opt1 = "-la";
+    // char *opt1 = "-la";
 
     rs_set_timeout(socket, (uint)5e6);
 

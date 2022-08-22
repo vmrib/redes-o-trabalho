@@ -13,7 +13,7 @@
 #define PACKET_OK(sockfd, index) \
     packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = OK})
 
-typedef enum packet_t
+typedef enum
 {
     ACK = 0b000011,
     NACK = 0b000010,
@@ -48,3 +48,5 @@ int packet_nack(int sockfd, uint index);
 int packet_ok(int sockfd, uint index);
 
 int packet_error(int sockfd, char *desc, uint index);
+
+int packet_end(int sockfd, uint index);

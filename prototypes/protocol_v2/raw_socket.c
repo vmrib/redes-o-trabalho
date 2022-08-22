@@ -9,6 +9,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <arpa/inet.h>
 
 #include "raw_socket.h"
 #include "debug.h"
@@ -61,6 +62,7 @@ int rs_send(int sockfd, void *data, size_t bytes)
 int rs_recv(int sockfd, void *data, size_t bytes)
 {
     TRY(read(sockfd, data, bytes));
+    // printf("RECEBA\n");
     return 0;
 }
 

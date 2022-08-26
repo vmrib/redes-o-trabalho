@@ -92,21 +92,52 @@ int protc_mkdir(int sockfd, char *dirname)
 
 int protc_get(int sockfd, char *filename)
 {
-    // packet_options_t opt;
-    // char buf[PACKET_DATA_MAX_SIZE];
+    packet_options_t opt;
+    char buf[PACKET_DATA_MAX_SIZE];
 
-    // do
-    // {
-    //     opt.index = 0;
-    //     opt.size = strlen(filename) + 1;
-    //     opt.type = GET;
-    //     TRY(packet_send(sockfd, filename, opt));
+    do
+    {
+        opt.index = 0;
+        opt.size = strlen(filename) + 1;
+        opt.type = GET;
+        TRY(packet_send(sockfd, filename, opt));
 
-    //     TRY(packet_recv(sockfd, buf, &opt));
-    // } while (opt.type == NACK);
+        TRY(packet_recv(sockfd, buf, &opt));
+    } while (opt.type == NACK);
 
-    // while (opt.type != FDESC)
+    if (opt.type == ERROR || opt.type != OK)
+        return RETURN_ERROR;
 
-    //     if (opt.type == ERROR)
-    //         return -1;
+    TRY(packet_recv(sockfd, buf, &opt));
+    if (opt.type != FDESC)
+        return RETURN_ERROR;
+
+    // testar se conteudo de FDESC está ok. Enviar ERROR caso não.
+
+    FILE *file = fopen(filename, "wb");
+    if (!file)
+        return RETURN_ERROR;
+
+    TRY(packet_ok(sockfd, 0));
+
+    while (1)
+    {
+        do
+        {
+            TRY(packet_recv(sockfd, buf, &opt));
+            if (opt.type != DATA || opt.type != ENDTX)
+                TRY(packet_nack(sockfd, 0));
+        } while (opt.type != DATA || opt.type != ENDTX);
+
+        if (opt.type == ENDTX)
+            break;
+
+        fwrite(buf, sizeof(char), opt.size, file);
+
+        TRY(packet_ack(sockfd, 0));
+    }
+
+    fclose(file);
+
+    return RETURN_SUCCESS;
 }

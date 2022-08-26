@@ -61,12 +61,14 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
 {
     envelope_t env;
     char buf[PACKET_DATA_MAX_SIZE];
-
+    // printf("buf: %s\n", buf);
 #ifndef NDEBUG
-    TRY(rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE)); // descarta echo do loopback
+    rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE); // descarta echo do loopback
+    // printf("buf: %s\n", buf);
 #endif
 
-    TRY(rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE));
+    rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE);
+    // printf("buf: %s\n", buf);
 
     // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
     // {
@@ -77,6 +79,7 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     if (env.start_marker != PACKET_START_MARKER)
     {
         // debug((uint)env.start_marker);
+        // printf("IF 1\n");
         return RETURN_ERROR;
     }
 
@@ -84,6 +87,7 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     if (env.parity != calc_parity(buf + sizeof(envelope_t) - 1, env.size))
     {
         // debug((uint)env.parity);
+        // printf("IF 2\n");
         return RETURN_ERROR;
     }
 
@@ -139,6 +143,18 @@ int packet_error(int sockfd, char *description, uint index)
         .type = ERROR,
     };
     TRY(packet_send(sockfd, description, opt));
+
+    return RETURN_SUCCESS;
+}
+
+int packet_end(int sockfd, uint index)
+{
+    packet_options_t opt = {
+        .index = index,
+        .size = 0,
+        .type = ENDTX,
+    };
+    TRY(packet_send(sockfd, NULL, opt));
 
     return RETURN_SUCCESS;
 }

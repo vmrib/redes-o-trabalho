@@ -22,11 +22,11 @@ int protc_cd(int sockfd, char *dirname)
         opt.type = CD;
         TRY(packet_send(sockfd, dirname, opt));
 
-        while (opt.index == c_index)
-        {
-            TRY(packet_recv(sockfd, buf, &opt));
-        }
-        // TRY(packet_recv(sockfd, buf, &opt));
+        // while (opt.index == c_index)
+        // {
+        //     TRY(packet_recv(sockfd, buf, &opt));
+        // }
+        TRY(packet_recv(sockfd, buf, &opt));
 
     } while (opt.type == NACK); // timeout?
 

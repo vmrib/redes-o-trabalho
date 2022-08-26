@@ -53,6 +53,8 @@ int rs_set_timeout(int sockfd, uint useconds)
     return 0;
 }
 
+#ifdef NOLOOPBACK
+
 int rs_send(int sockfd, void *data, size_t bytes)
 {
     TRY(write(sockfd, data, bytes));
@@ -65,6 +67,52 @@ int rs_recv(int sockfd, void *data, size_t bytes)
     // printf("RECEBA\n");
     return 0;
 }
+
+#else
+
+int rs_send(int sockfd, void *data, size_t bytes)
+{
+    // static uint send_id = 0;
+    // char buf[bytes + sizeof(send_id)];
+
+    // memcpy(buf, &send_id, sizeof(send_id));
+    // memcpy(buf + sizeof(send_id), data, bytes);
+
+    // debug(send_id);
+
+    // TRY(write(sockfd, buf, bytes + sizeof(send_id)));
+    // send_id++;
+
+    TRY(write(sockfd, data, bytes));
+    TRY(read(sockfd, data, bytes));
+
+    return RETURN_SUCCESS;
+}
+
+int rs_recv(int sockfd, void *data, size_t bytes)
+{
+    // static uint recv_id = 0;
+    // uint id;
+    // char buf[bytes + sizeof(id)];
+
+    // debug(recv_id);
+
+    // do
+    // {
+    //     TRY(read(sockfd, buf, bytes + sizeof(id)));
+    //     memcpy(&id, buf, sizeof(id));
+    //     debug(id);
+    // } while (id <= recv_id);
+
+    // memcpy(data, buf + sizeof(id), bytes);
+    // recv_id++;
+
+    TRY(read(sockfd, data, bytes));
+
+    return RETURN_SUCCESS;
+}
+
+#endif
 
 int rs_close(int sockfd)
 {

@@ -22,7 +22,8 @@ int protc_cd(int sockfd, char *dirname)
         opt.type = CD;
         TRY(packet_send(sockfd, dirname, opt));
 
-        while(opt.index == c_index){
+        while (opt.index == c_index)
+        {
             TRY(packet_recv(sockfd, buf, &opt));
         }
         // TRY(packet_recv(sockfd, buf, &opt));
@@ -52,7 +53,8 @@ int protc_ls(int sockfd, char *arg)
         opt.type = LS;
         TRY(packet_send(sockfd, arg, opt));
 
-        while(opt.type == LS){
+        while (opt.type == LS)
+        {
             TRY(packet_recv(sockfd, buf, &opt));
             printf("Mensagem recebida: %s\n", buf);
             printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
@@ -68,7 +70,6 @@ int protc_ls(int sockfd, char *arg)
     // printf("CLIENTE\n");
     if (opt.type == ERROR) //|| opt.type != OK)
         return RETURN_ERROR;
-
 
     while (1)
     {
@@ -158,6 +159,8 @@ int protc_get(int sockfd, char *filename)
 
     //     if (opt.type == ERROR)
     //         return -1;
+
+    return RETURN_SUCCESS;
 }
 
 int local_ls(char *flag) // talvez devesse passar separado o comando e as opcoes/argumentos?
@@ -165,27 +168,29 @@ int local_ls(char *flag) // talvez devesse passar separado o comando e as opcoes
     // checar permissao
 
     // enunciado: -a ou -l (XOR)
-    if(!strcmp(flag, "-a"))
-        system("ls -a");
-    else if(!strcmp(flag, "-l"))
-        system("ls -l");
-    else if(!strcmp(flag, "\0")) // sem opcoes
-        system("ls");
+    if (!strcmp(flag, "-a"))
+        TRY(system("ls -a"));
+    else if (!strcmp(flag, "-l"))
+        TRY(system("ls -l"));
+    else if (!strcmp(flag, "\0")) // sem opcoes
+        TRY(system("ls"));
     else
         printf("ERRO: flag '%s' nao reconhecida\n", flag);
-    
-    return 0;
 
+    return RETURN_SUCCESS;
 }
 
 int local_cd(char *dirname)
 {
-    chdir(dirname);
+    TRY(chdir(dirname));
+    return RETURN_SUCCESS;
 }
 
 int local_mkdir(char *dirname)
 {
     char mkdir[64] = "mkdir ";
     strcat(mkdir, dirname);
-    system(mkdir);
+    TRY(system(mkdir));
+
+    return RETURN_SUCCESS;
 }

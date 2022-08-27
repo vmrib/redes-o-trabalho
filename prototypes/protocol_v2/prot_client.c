@@ -47,7 +47,7 @@ int protc_ls(int sockfd, char *arg)
     char buf[PACKET_DATA_MAX_SIZE];
     uint c_index = 0;
 
-    printf("index: %d\n", c_index);
+    debug(c_index);
     do
     {
         opt.index = c_index;
@@ -55,19 +55,20 @@ int protc_ls(int sockfd, char *arg)
         opt.type = LS;
         TRY(packet_send(sockfd, arg, opt));
 
-        while (opt.type == LS)
-        {
-            TRY(packet_recv(sockfd, buf, &opt));
-            printf("Mensagem recebida: %s\n", buf);
-            printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
-            c_index = opt.index;
-            printf("index: %d\n", c_index);
-        }
-        // TRY(packet_recv(sockfd, buf, &opt));
+        // while (opt.type == LS)
+        // {
+        //     TRY(packet_recv(sockfd, buf, &opt));
+        //     printf("Mensagem recebida: %s\n", buf);
+        //     printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+        //     c_index = opt.index;
+        //     printf("index: %d\n", c_index);
+        // }
+        TRY(packet_recv(sockfd, buf, &opt));
     } while (opt.type == NACK); // timeout
 
     c_index++;
-    printf("index: %d\n", c_index);
+    // printf("index: %d\n", c_index);
+    debug(c_index);
 
     // printf("CLIENTE\n");
     if (opt.type == ERROR) //|| opt.type != OK)
@@ -90,9 +91,9 @@ int protc_ls(int sockfd, char *arg)
         }
 
         c_index = opt.index;
-        printf("Mensagem recebida: %s\n", buf);
-        printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
-        printf("index: %d\n", c_index);
+        // printf("Mensagem recebida: %s\n", buf);
+        // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+        // printf("index: %d\n", c_index);
 
         // printf("tipo: %d\n", opt.type);
 
@@ -100,17 +101,18 @@ int protc_ls(int sockfd, char *arg)
             break;
 
         if (opt.type != SHOW)
-            return -1;
+            return RETURN_ERROR;
 
-        printf("%s", buf); // opt.type == SHOW
+        printf("%s\n", buf); // opt.type == SHOW
         TRY(packet_ack(sockfd, c_index));
         c_index++;
-        printf("index: %d\n", c_index);
+        // printf("index: %d\n", c_index);
+        debug(c_index);
 
         // while (packet_recv(sockfd, buf, &opt) != -1){printf("ali\n");}
         TRY(packet_recv(sockfd, buf, &opt));
         c_index = opt.index;
-        printf("index: %d\n", c_index);
+        debug(c_index);
 
         // TRY(packet_ok(sockfd, 0));
     }

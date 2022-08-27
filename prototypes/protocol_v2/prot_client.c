@@ -8,7 +8,7 @@
 #include "error.h"
 #include "debug.h"
 
-uint c_index = 0;
+// uint c_index = 0;
 
 int protc_cd(int sockfd, char *dirname)
 {
@@ -17,7 +17,7 @@ int protc_cd(int sockfd, char *dirname)
 
     do
     {
-        opt.index = c_index;
+        opt.index = 0;
         opt.size = strlen(dirname) + 1;
         opt.type = CD;
         TRY(packet_send(sockfd, dirname, opt));
@@ -30,7 +30,7 @@ int protc_cd(int sockfd, char *dirname)
 
     } while (opt.type == NACK); // timeout?
 
-    c_index++; // se funcionou
+    // c_index++; // se funcionou
 
     if (opt.type == ERROR || opt.type != OK)
     {
@@ -45,6 +45,8 @@ int protc_ls(int sockfd, char *arg)
 {
     packet_options_t opt;
     char buf[PACKET_DATA_MAX_SIZE];
+    uint c_index = 0;
+
     printf("index: %d\n", c_index);
     do
     {
@@ -123,7 +125,7 @@ int protc_mkdir(int sockfd, char *dirname)
 
     do
     {
-        opt.index = c_index;
+        opt.index = 0;
         opt.size = strlen(dirname) + 1;
         opt.type = MKDIR;
         TRY(packet_send(sockfd, dirname, opt));
@@ -132,7 +134,7 @@ int protc_mkdir(int sockfd, char *dirname)
 
     } while (opt.type == NACK);
 
-    c_index++;
+    // c_index++;
 
     if (opt.type == ERROR || opt.type != OK)
         return RETURN_ERROR;

@@ -3,3 +3,5 @@ build
 *.o
 client
 server
+test_client
+test_server

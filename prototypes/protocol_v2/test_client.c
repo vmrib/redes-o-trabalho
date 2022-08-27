@@ -8,6 +8,8 @@
 #include "prot_client.h"
 #include "debug.h"
 
+#define TIMEOUT (uint)1e6
+
 int sock;
 packet_options_t opt;
 char readbuf[PACKET_DATA_MAX_SIZE];
@@ -53,7 +55,7 @@ void test_protc_cd()
         if (fork() == 0) // child
         {
             int childsock = rs_socket("lo");
-            rs_set_timeout(childsock, (uint)1e6);
+            rs_set_timeout(childsock, TIMEOUT);
             int err = protc_cd(childsock, "panzerkampfwagen");
             exit(err);
         }
@@ -65,7 +67,7 @@ void test_protc_cd()
     CHECK_OPT(opt, CD);
     CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
     CHECK_CHILD(0, "protc_cd terminou com erro");
-    puts("passou no teste OK\n");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste OK\n");
 
     // teste com server ERROR
     fork_protc_cd();
@@ -73,7 +75,7 @@ void test_protc_cd()
     CHECK_OPT(opt, CD);
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber ERROR");
-    puts("passou no teste ERROR\n");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR\n");
 
     // teste com lixo
     fork_protc_cd();
@@ -84,18 +86,18 @@ void test_protc_cd()
     opt.type = 0b111111;
     CHECK(packet_send(sock, "jkshfglaisghasf", opt), "nao foi possivel enviar lixo");
     CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber lixo");
-    puts("passou no teste lixo\n");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste lixo\n");
 
     // teste com silencio
     fork_protc_cd();
     CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
     CHECK_OPT(opt, CD);
     CHECK_CHILD(-1, "protc_cd recebeu coisas do alem");
-    puts("passou no teste silencio\n");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
 
     // teste com server NACK
     fork_protc_cd();
-    for (int i = 0; i < 1000; i++) // envia NACK 10 vezes
+    for (int i = 0; i < 100; i++) // envia NACK 10 vezes
     {
         CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
         CHECK_OPT(opt, CD);
@@ -104,16 +106,82 @@ void test_protc_cd()
     CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
     CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
     CHECK_CHILD(0, "protc_cd terminou com erro");
-    puts("passou no teste NACK\n");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste NACK\n");
+}
+
+void test_protc_mkdir()
+{
+    void fork_protc_mkdir()
+    {
+        if (fork() == 0) // child
+        {
+            int childsock = rs_socket("lo");
+            rs_set_timeout(childsock, TIMEOUT);
+            int err = protc_mkdir(childsock, "panzerkampfwagen");
+            exit(err);
+        }
+    }
+
+    // teste com server OK
+    fork_protc_mkdir();
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK_OPT(opt, MKDIR);
+    CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
+    CHECK_CHILD(0, "protc_cd terminou com erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste OK\n");
+
+    // teste com server ERROR
+    fork_protc_mkdir();
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK_OPT(opt, MKDIR);
+    CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
+    CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber ERROR");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR\n");
+
+    // teste com lixo
+    fork_protc_mkdir();
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK_OPT(opt, MKDIR);
+    opt.index = 0;
+    opt.size = 16;
+    opt.type = 0b111111;
+    CHECK(packet_send(sock, "jkshfglaisghasf", opt), "nao foi possivel enviar lixo");
+    CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber lixo");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste lixo\n");
+
+    // teste com silencio
+    fork_protc_mkdir();
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK_OPT(opt, MKDIR);
+    CHECK_CHILD(-1, "protc_cd recebeu coisas do alem");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
+
+    // teste com server NACK
+    fork_protc_mkdir();
+    for (int i = 0; i < 100; i++) // envia NACK 10 vezes
+    {
+        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+        CHECK_OPT(opt, MKDIR);
+        CHECK(packet_nack(sock, 0), "nao foi possivel enviar NACK");
+    }
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
+    CHECK_CHILD(0, "protc_cd terminou com erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste NACK\n");
 }
 
 int main(int argc, char const *argv[])
 {
     sock = rs_socket("lo");
-    rs_set_timeout(sock, (uint)1e6);
+    rs_set_timeout(sock, TIMEOUT);
 
+    printf("========== Testando protc_cd() ==========\n");
     test_protc_cd();
-    printf("protc_cd OK!\n");
+    printf("========== protc_cd() OK! YAY! ==========\n\n");
+    printf("======== Testando protc_mkdir() =========\n");
+    test_protc_mkdir();
+    printf("======== protc_mkdir() OK! YAY! =========\n\n");
 
+    printf("============== TUDO CERTO ===============\n");
     return 0;
 }

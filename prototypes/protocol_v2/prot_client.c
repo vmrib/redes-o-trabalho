@@ -159,10 +159,11 @@ int protc_get(int sockfd, char *filename)
         TRY(packet_recv(sockfd, buf, &opt));
     } while (opt.type == NACK);
 
-    if (opt.type == ERROR || opt.type != OK)
-        return RETURN_ERROR;
+    // server envia ou não ok antes?
+    // if (opt.type == ERROR || opt.type != OK)
+    //     return RETURN_ERROR;
 
-    TRY(packet_recv(sockfd, buf, &opt));
+    // TRY(packet_recv(sockfd, buf, &opt));
     if (opt.type != FDESC)
         return RETURN_ERROR;
 
@@ -178,6 +179,7 @@ int protc_get(int sockfd, char *filename)
     {
         do
         {
+            // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
             if (opt.type != DATA || opt.type != ENDTX)
                 TRY(packet_nack(sockfd, 0));

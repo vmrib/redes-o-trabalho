@@ -285,6 +285,57 @@ void test_protc_ls()
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
 }
 
+void test_protc_get()
+{
+    void fork_protc_get()
+    {
+        if (fork() == 0) // child
+        {
+            int childsock = rs_socket("lo");
+            rs_set_timeout(childsock, TIMEOUT);
+            int err = protc_get(childsock, "TODO");
+            exit(err);
+        }
+    }
+
+    const char *file =
+        "Ela partiu\n                                                     \
+        Partiu e nunca mais voltou\n                                      \
+        Ela sumiu, sumiu e nunca mais voltou\n                            \
+        Se souberem onde ela está\n                                       \
+        Digam-me e vou lá buscá-la\n                                      \
+        Pelo menos telefone em seu nome\n                                 \
+        Me dêumflex uma dica, uma pista, insistaEi! e nunca mais voltou\n \
+        Ela sumiu, sumiu e nunca mais voltou\n                            \
+        Ela partiu, partiu\n                                              \
+        E nunca mais voltou\n                                             \
+        Se eu soubesse onde ela foi iria atrás\n                          \
+        Mas não sei mais nem direção\n                                    \
+        Várias noites que eu não durmo um segundo\n                       \
+        Estou cansado\n                                                   \
+        Magoado exausto\n                                                 \
+        E nunca mais voltou\n";
+
+    const size_t filesize = sizeof(file);
+    // teste tudo ok
+    fork_protc_get();
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou GET");
+    CHECK_OPT(opt, GET);
+
+    // opt.type = FDESC;
+    // opt.index = 0;
+    // opt.size = sizeof(filename);
+    // strcpy(readbuf, filename, sizeof(filename));
+    opt.type = FDESC;
+    opt.index = 0;
+    opt.size = sizeof(size_t);
+    memcpy(readbuf, &filesize, sizeof(size_t));
+    CHECK(packet_send(sock, readbuf, opt), "nao foi possivel enviar FDESC");
+
+    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou OK");
+    CHECK_OPT(opt, OK);
+}
+
 int main(int argc, char const *argv[])
 {
     sock = rs_socket("lo");

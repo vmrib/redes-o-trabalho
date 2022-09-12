@@ -47,7 +47,7 @@ int protc_ls(int sockfd, char *arg)
     char buf[PACKET_DATA_MAX_SIZE];
     uint c_index = 0;
 
-    debug(c_index);
+    // debug(c_index);
     do
     {
         opt.index = c_index;
@@ -55,27 +55,33 @@ int protc_ls(int sockfd, char *arg)
         opt.type = LS;
         TRY(packet_send(sockfd, arg, opt));
 
-        // while (opt.type == LS)
-        // {
-        //     TRY(packet_recv(sockfd, buf, &opt));
-        //     printf("Mensagem recebida: %s\n", buf);
-        //     printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
-        //     c_index = opt.index;
-        //     printf("index: %d\n", c_index);
-        // }
-        TRY(packet_recv(sockfd, buf, &opt));
+        // printf("AQUI 0\n");
+
+        packet_reset(&opt);
+
+        while (opt.type == EMPTY)
+        {
+            packet_recv(sockfd, buf, &opt);
+            // printf("\nMensagem recebida: %s", buf);
+            printf("\n", buf);
+            // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+            c_index = opt.index;
+            // printf("index: %d\n", c_index);
+        }
+        // TRY(packet_recv(sockfd, buf, &opt));
     } while (opt.type == NACK); // timeout
 
     c_index++;
     // printf("index: %d\n", c_index);
-    debug(c_index);
+    // debug(c_index);
 
-    // printf("CLIENTE\n");
+    // printf("AQUI 1\n");
     if (opt.type == ERROR) //|| opt.type != OK)
         return RETURN_ERROR;
 
     while (1)
     {
+        // printf("AQUI 2\n");
         // packet_recv(sockfd, buf, &opt);
         // while (packet_recv(sockfd, buf, &opt) == 666) // ????????
         //     TRY(packet_nack(sockfd, 0));
@@ -83,12 +89,20 @@ int protc_ls(int sockfd, char *arg)
         // if(algo) // sequencia, paridade, comando nao existente
         //     packet_nack(sockfd, 0);
 
-        if (opt.type == ACK)
+        // if (opt.type == ACK)
+        // {
+        //     // printf("pegou o proprio\n");
+        //     TRY(packet_recv(sockfd, buf, &opt));
+        //     continue;
+        // }
+
+        if(opt.type == EMPTY)
         {
-            // printf("pegou o proprio\n");
             TRY(packet_recv(sockfd, buf, &opt));
             continue;
         }
+
+        // printf("AQUI 3\n");
 
         c_index = opt.index;
         // printf("Mensagem recebida: %s\n", buf);
@@ -100,21 +114,27 @@ int protc_ls(int sockfd, char *arg)
         if (opt.type == ENDTX)
             break;
 
-        if (opt.type != SHOW)
-            return RETURN_ERROR;
+        // printf("AQUI 4\n");
 
-        printf("%s\n", buf); // opt.type == SHOW
+        // if (opt.type != SHOW)
+        //     return RETURN_ERROR;
+
+        printf("%s", buf); // opt.type == SHOW
         TRY(packet_ack(sockfd, c_index));
         c_index++;
         // printf("index: %d\n", c_index);
-        debug(c_index);
+        // debug(c_index);
+
+        packet_reset(&opt);
 
         // while (packet_recv(sockfd, buf, &opt) != -1){printf("ali\n");}
         TRY(packet_recv(sockfd, buf, &opt));
         c_index = opt.index;
-        debug(c_index);
+        // debug(c_index);
 
         // TRY(packet_ok(sockfd, 0));
+
+        // printf("AQUI 5\n");
     }
 
     return RETURN_SUCCESS;

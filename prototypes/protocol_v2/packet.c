@@ -158,3 +158,9 @@ int packet_end(int sockfd, uint index)
 
     return RETURN_SUCCESS;
 }
+
+int packet_reset(packet_options_t *opt)
+{
+    opt->type = EMPTY;
+    return 0;
+}

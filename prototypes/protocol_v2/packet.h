@@ -28,6 +28,7 @@ typedef enum
     PUT = 0b001010,
     DATA = 0b100000,
     FDESC = 0b011000,
+    EMPTY = 0b000000,
 } packet_t;
 
 typedef struct packet_options_t
@@ -50,3 +51,5 @@ int packet_ok(int sockfd, uint index);
 int packet_error(int sockfd, char *desc, uint index);
 
 int packet_end(int sockfd, uint index);
+
+int packet_reset(packet_options_t *options);

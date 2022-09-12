@@ -19,6 +19,8 @@ int main(int argc, char const *argv[])
     int ultimo = -1;
     while(1)
     {
+        packet_reset(&c);
+        
         // if(packet_recv(socket, buf, &c) == -1)
         //     continue;
         // while (packet_recv(socket, buf, &c) == -1){}

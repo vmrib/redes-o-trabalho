@@ -33,6 +33,7 @@ int main(int argc, char const *argv[])
 
     while(1)
     {
+        packet_reset(&p_opt);
         // printf("cliente_$ ");
         printf("%c[%d;%dm\ncliente_$ %c[%dm",27,1,32,27,1);
         scanf(" %[^\n]", linha);

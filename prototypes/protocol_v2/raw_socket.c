@@ -108,6 +108,7 @@ int rs_recv(int sockfd, void *data, size_t bytes)
     // recv_id++;
 
     TRY(read(sockfd, data, bytes));
+    TRY(read(sockfd, data, bytes));
 
     return RETURN_SUCCESS;
 }

@@ -62,10 +62,10 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     envelope_t env;
     char buf[PACKET_DATA_MAX_SIZE];
     // printf("buf: %s\n", buf);
-#ifndef NDEBUG
-    rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE); // descarta echo do loopback
-    // printf("buf: %s\n", buf);
-#endif
+    // #ifndef NDEBUG
+    //     rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE); // descarta echo do loopback
+    //     // printf("buf: %s\n", buf);
+    // #endif
 
     rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE);
     // printf("buf: %s\n", buf);
@@ -78,7 +78,7 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     memcpy(&env, buf, sizeof(envelope_t) - 1);
     if (env.start_marker != PACKET_START_MARKER)
     {
-        // debug((uint)env.start_marker);
+        debug((uint)env.start_marker);
         // printf("IF 1\n");
         return RETURN_ERROR;
     }
@@ -86,7 +86,7 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     env.parity = buf[env.size + sizeof(envelope_t) - 1];
     if (env.parity != calc_parity(buf + sizeof(envelope_t) - 1, env.size))
     {
-        // debug((uint)env.parity);
+        debug((uint)env.parity);
         // printf("IF 2\n");
         return RETURN_ERROR;
     }

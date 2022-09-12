@@ -2,7 +2,7 @@
 
 #include <sys/types.h>
 
-#define PACKET_DATA_MAX_SIZE 64
+#define PACKET_DATA_MAX_SIZE 63
 
 #define PACKET_ACK(sockfd, index) \
     packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = ACK})

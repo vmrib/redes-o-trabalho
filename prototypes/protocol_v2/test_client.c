@@ -13,7 +13,7 @@
 
 int sock;
 packet_options_t opt;
-char readbuf[PACKET_DATA_MAX_SIZE];
+char buf[PACKET_DATA_MAX_SIZE];
 
 // checa se deu erro
 #define CHECK(err, msg)                                                          \
@@ -64,7 +64,7 @@ void test_protc_cd()
 
     // teste com server OK
     fork_protc_cd();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
     CHECK_OPT(opt, CD);
     CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
     CHECK_CHILD(0, "protc_cd terminou com erro");
@@ -72,7 +72,7 @@ void test_protc_cd()
 
     // teste com server ERROR
     fork_protc_cd();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
     CHECK_OPT(opt, CD);
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber ERROR");
@@ -80,7 +80,7 @@ void test_protc_cd()
 
     // teste com lixo
     fork_protc_cd();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
     CHECK_OPT(opt, CD);
     opt.index = 0;
     opt.size = 16;
@@ -91,7 +91,7 @@ void test_protc_cd()
 
     // teste com silencio
     fork_protc_cd();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
     CHECK_OPT(opt, CD);
     CHECK_CHILD(-1, "protc_cd recebeu coisas do alem");
     printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
@@ -100,11 +100,11 @@ void test_protc_cd()
     fork_protc_cd();
     for (int i = 0; i < 100; i++) // envia NACK 10 vezes
     {
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
         CHECK_OPT(opt, CD);
         CHECK(packet_nack(sock, 0), "nao foi possivel enviar NACK");
     }
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou CD");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
     CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
     CHECK_CHILD(0, "protc_cd terminou com erro");
     printf("%s: %s\n", __FUNCTION__, "passou no teste NACK\n");
@@ -125,7 +125,7 @@ void test_protc_mkdir()
 
     // teste com server OK
     fork_protc_mkdir();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
     CHECK_OPT(opt, MKDIR);
     CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
     CHECK_CHILD(0, "protc_cd terminou com erro");
@@ -133,7 +133,7 @@ void test_protc_mkdir()
 
     // teste com server ERROR
     fork_protc_mkdir();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
     CHECK_OPT(opt, MKDIR);
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber ERROR");
@@ -141,7 +141,7 @@ void test_protc_mkdir()
 
     // teste com lixo
     fork_protc_mkdir();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
     CHECK_OPT(opt, MKDIR);
     opt.index = 0;
     opt.size = 16;
@@ -152,7 +152,7 @@ void test_protc_mkdir()
 
     // teste com silencio
     fork_protc_mkdir();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
     CHECK_OPT(opt, MKDIR);
     CHECK_CHILD(-1, "protc_cd recebeu coisas do alem");
     printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
@@ -161,11 +161,11 @@ void test_protc_mkdir()
     fork_protc_mkdir();
     for (int i = 0; i < 100; i++) // envia NACK 10 vezes
     {
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
         CHECK_OPT(opt, MKDIR);
         CHECK(packet_nack(sock, 0), "nao foi possivel enviar NACK");
     }
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou MKDIR");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
     CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
     CHECK_CHILD(0, "protc_cd terminou com erro");
     printf("%s: %s\n", __FUNCTION__, "passou no teste NACK\n");
@@ -195,7 +195,7 @@ void test_protc_ls()
 
     // teste com tudo OK
     fork_protc_ls();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
     for (int i = 0; i < 4; i++)
     {
@@ -203,7 +203,7 @@ void test_protc_ls()
         opt.size = strlen(dir[i]) + 1;
         opt.index = i;
         CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou ACK");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
         CHECK_OPT(opt, ACK);
     }
     CHECK(packet_end(sock, 0), "nao foi possivel enviar ENDTX");
@@ -213,24 +213,24 @@ void test_protc_ls()
     fork_protc_ls();
     for (int i = 0; i < 100; i++)
     {
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
         CHECK_OPT(opt, LS);
         CHECK(packet_nack(sock, 0), "nao foi possivel enviar NACK");
     }
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK(packet_end(sock, 0), "nao foi possivel enviar ENDTX");
     CHECK_CHILD(0, "protc_ls retornou com erro");
 
     // teste com ERROR
     fork_protc_ls();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
 
     // teste com ERROR 2
     fork_protc_ls();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
     for (int i = 0; i < 2; i++)
     {
@@ -238,7 +238,7 @@ void test_protc_ls()
         opt.size = strlen(dir[i]) + 1;
         opt.index = i;
         CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou ACK");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
         CHECK_OPT(opt, ACK);
     }
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
@@ -246,13 +246,13 @@ void test_protc_ls()
 
     // teste com silencio
     fork_protc_ls();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
 
     // teste com ENDTX
     fork_protc_ls();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
     for (int i = 0; i < 4; i++)
     {
@@ -260,14 +260,14 @@ void test_protc_ls()
         opt.size = strlen(dir[i]) + 1;
         opt.index = i;
         CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou ACK");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
         CHECK_OPT(opt, ACK);
     }
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
 
     // teste com lixo
     fork_protc_ls();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou LS");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
     for (int i = 0; i < 2; i++)
     {
@@ -275,7 +275,7 @@ void test_protc_ls()
         opt.size = strlen(dir[i]) + 1;
         opt.index = i;
         CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
-        CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou ACK");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
         CHECK_OPT(opt, ACK);
     }
     opt.index = 0;
@@ -319,7 +319,7 @@ void test_protc_get()
     const size_t filesize = sizeof(file);
     // teste tudo ok
     fork_protc_get();
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou GET");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou GET");
     CHECK_OPT(opt, GET);
 
     // opt.type = FDESC;
@@ -329,11 +329,34 @@ void test_protc_get()
     opt.type = FDESC;
     opt.index = 0;
     opt.size = sizeof(size_t);
-    memcpy(readbuf, &filesize, sizeof(size_t));
-    CHECK(packet_send(sock, readbuf, opt), "nao foi possivel enviar FDESC");
+    memcpy(buf, &filesize, sizeof(size_t));
+    CHECK(packet_send(sock, buf, opt), "nao foi possivel enviar FDESC");
 
-    CHECK(packet_recv(sock, readbuf, &opt), "cliente nao enviou OK");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou OK");
     CHECK_OPT(opt, OK);
+
+    size_t i, j;
+    for (i = 0, j = 0; i < sizeof(file); i += PACKET_DATA_MAX_SIZE, j++)
+    {
+        opt.type = DATA;
+        opt.index = j;
+        opt.size = PACKET_DATA_MAX_SIZE;
+        memcpy(buf, file + i, PACKET_DATA_MAX_SIZE);
+        CHECK(packet_send(sock, buf, opt), "nao foi possivel enviar DATA");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
+        CHECK_OPT(opt, ACK);
+    }
+    i -= PACKET_DATA_MAX_SIZE;
+    opt.type = DATA;
+    opt.index = j;
+    opt.size = sizeof(file) - i;
+    memcpy(buf, file + i, opt.size);
+    CHECK(packet_send(sock, buf, opt), "nao foi possivel enviar DATA");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
+    CHECK_OPT(opt, ACK);
+    CHECK(packet_end(sock, j++), "nao foi possivel enviar ENDTX");
+    CHECK_CHILD(0, "protc_get retornou com erro");
+    puts("passou do ok? Verificar arquivo");
 }
 
 int main(int argc, char const *argv[])
@@ -341,15 +364,18 @@ int main(int argc, char const *argv[])
     sock = rs_socket("lo");
     rs_set_timeout(sock, TIMEOUT);
 
-    printf("========== Testando protc_cd() ==========\n");
-    test_protc_cd();
-    printf("========== protc_cd() OK! YAY! ==========\n\n");
-    printf("======== Testando protc_mkdir() =========\n");
-    test_protc_mkdir();
-    printf("======== protc_mkdir() OK! YAY! =========\n\n");
-    printf("========== Testando protc_ls() ===========\n");
-    test_protc_ls();
-    printf("========== protc_ls() OK! YAY! ==========\n\n");
+    // printf("========== Testando protc_cd() ==========\n");
+    // test_protc_cd();
+    // printf("========== protc_cd() OK! YAY! ==========\n\n");
+    // printf("======== Testando protc_mkdir() =========\n");
+    // test_protc_mkdir();
+    // printf("======== protc_mkdir() OK! YAY! =========\n\n");
+    // printf("========== Testando protc_ls() ===========\n");
+    // test_protc_ls();
+    // printf("========== protc_ls() OK! YAY! ==========\n\n");
+    printf("========== Testando protc_get() =========\n");
+    test_protc_get();
+    printf("========== protc_get() OK! YAY! =========\n\n");
     printf("============== TUDO CERTO ===============\n");
     return 0;
 }

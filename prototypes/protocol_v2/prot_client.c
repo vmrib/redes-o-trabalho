@@ -179,11 +179,17 @@ int protc_get(int sockfd, char *filename)
     {
         do
         {
+            printf("pau\n");
             // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
             if (opt.type != DATA || opt.type != ENDTX)
                 TRY(packet_nack(sockfd, 0));
         } while (opt.type != DATA || opt.type != ENDTX);
+
+        // TRY(packet_recv(sockfd, buf, &opt));
+
+        // if (opt.type != DATA || opt.type != ENDTX)
+        //     return RETURN_ERROR;
 
         if (opt.type == ENDTX)
             break;

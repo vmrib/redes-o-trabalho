@@ -95,12 +95,12 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     // printf("\n");
 
     memcpy(&env, buf, sizeof(envelope_t) - 1);
-    if (env.start_marker != PACKET_START_MARKER)
-    {
-        debug((uint)env.start_marker);
-        // printf("IF 1\n");
-        return RETURN_ERROR;
-    }
+    // if (env.start_marker != PACKET_START_MARKER)
+    // {
+    //     debug((uint)env.start_marker);
+    //     // printf("IF 1\n");
+    //     return RETURN_ERROR;
+    // }
 
     env.parity = buf[env.size + sizeof(envelope_t) - 1];
     // printf("parity read from sent: 0x%X\n", env.parity);

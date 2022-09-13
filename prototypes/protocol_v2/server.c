@@ -26,14 +26,14 @@ int main(int argc, char const *argv[])
         // while (packet_recv(socket, buf, &c) == -1){}
         packet_recv(socket, buf, &c);
 
-        if (c.index == ultimo)
-            continue;
-        else
-            ultimo = c.index;
+        // if (c.index == ultimo)
+        //     continue;
+        // else
+        //     ultimo = c.index;
 
-        printf("\n\nSERVIDOR:\n");
-        printf("Mensagem recebida: %s\n", buf);
-        printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", c.size, c.type, c.index);
+        // printf("\n\nSERVIDOR:\n");
+        // printf("Mensagem recebida: %s\n", buf);
+        // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", c.size, c.type, c.index);
 
         switch (c.type)
         {

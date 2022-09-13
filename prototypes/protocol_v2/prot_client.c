@@ -34,7 +34,7 @@ int protc_cd(int sockfd, char *dirname)
 
     if (opt.type == ERROR || opt.type != OK)
     {
-        debug((uint)opt.type);
+        // debug((uint)opt.type);
         return RETURN_ERROR;
     }
 
@@ -61,7 +61,7 @@ int protc_ls(int sockfd, char *arg)
 
         while (opt.type == EMPTY)
         {
-            packet_recv(sockfd, buf, &opt);
+            TRY(packet_recv(sockfd, buf, &opt));
             // printf("\nMensagem recebida: %s", buf);
             // printf("\n", buf);
             // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
@@ -93,7 +93,7 @@ int protc_ls(int sockfd, char *arg)
         //     TRY(packet_recv(sockfd, buf, &opt));
         //     continue;
         // }
-
+        // printf("TIPO: %u\n", opt.type);
         if (opt.type == EMPTY)
         {
             TRY(packet_recv(sockfd, buf, &opt));
@@ -106,13 +106,13 @@ int protc_ls(int sockfd, char *arg)
             return RETURN_ERROR;
         }
 
-        if (opt.type != SHOW && opt.type != ENDTX)
-        {
-            // Bizarro, panico
-            printf("Bizarro\n");
-            debug((uint)opt.type);
-            return RETURN_ERROR;
-        }
+        // if (opt.type != SHOW && opt.type != ENDTX)
+        // {
+        //     // Bizarro, panico
+        //     printf("Bizarro\n");
+        //     debug((uint)opt.type);
+        //     return RETURN_ERROR;
+        // }
 
         // printf("AQUI 3\n");
 
@@ -131,11 +131,20 @@ int protc_ls(int sockfd, char *arg)
         // if (opt.type != SHOW)
         //     return RETURN_ERROR;
 
-        printf("%s\n", buf); // opt.type == SHOW
-        TRY(packet_ack(sockfd, c_index));
-        c_index++;
+        if(opt.type == SHOW)
+        {
+            // printf("SHOW: ");
+            printf("%s", buf); // opt.type == SHOW
+            TRY(packet_ack(sockfd, c_index));
+        }
+        // c_index++;
         // printf("index: %d\n", c_index);
         // debug(c_index);
+
+        else
+        {
+            TRY(packet_nack(sockfd, c_index));
+        }
 
         packet_reset(&opt);
 
@@ -149,6 +158,7 @@ int protc_ls(int sockfd, char *arg)
         // printf("AQUI 5\n");
     }
 
+    packet_reset(&opt);
     return RETURN_SUCCESS;
 }
 

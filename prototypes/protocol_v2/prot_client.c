@@ -63,7 +63,7 @@ int protc_ls(int sockfd, char *arg)
         {
             packet_recv(sockfd, buf, &opt);
             // printf("\nMensagem recebida: %s", buf);
-            printf("\n", buf);
+            // printf("\n", buf);
             // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
             c_index = opt.index;
             // printf("index: %d\n", c_index);
@@ -76,8 +76,6 @@ int protc_ls(int sockfd, char *arg)
     // debug(c_index);
 
     // printf("AQUI 1\n");
-    if (opt.type == ERROR) //|| opt.type != OK)
-        return RETURN_ERROR;
 
     while (1)
     {
@@ -96,10 +94,24 @@ int protc_ls(int sockfd, char *arg)
         //     continue;
         // }
 
-        if(opt.type == EMPTY)
+        if (opt.type == EMPTY)
         {
             TRY(packet_recv(sockfd, buf, &opt));
             continue;
+        }
+
+        if (opt.type == ERROR)
+        {
+            // Tratar ?? Erro enviado propositalmente pelo server
+            return RETURN_ERROR;
+        }
+
+        if (opt.type != SHOW && opt.type != ENDTX)
+        {
+            // Bizarro, panico
+            printf("Bizarro\n");
+            debug((uint)opt.type);
+            return RETURN_ERROR;
         }
 
         // printf("AQUI 3\n");
@@ -119,7 +131,7 @@ int protc_ls(int sockfd, char *arg)
         // if (opt.type != SHOW)
         //     return RETURN_ERROR;
 
-        printf("%s", buf); // opt.type == SHOW
+        printf("%s\n", buf); // opt.type == SHOW
         TRY(packet_ack(sockfd, c_index));
         c_index++;
         // printf("index: %d\n", c_index);
@@ -176,8 +188,13 @@ int protc_get(int sockfd, char *filename)
         opt.type = GET;
         TRY(packet_send(sockfd, filename, opt));
 
+        // printf(" ================================== \n");
         TRY(packet_recv(sockfd, buf, &opt));
+        // printf(" ================================== \n");
+
     } while (opt.type == NACK);
+
+    // printf("FOI 1\n");
 
     // server envia ou não ok antes?
     // if (opt.type == ERROR || opt.type != OK)
@@ -194,17 +211,22 @@ int protc_get(int sockfd, char *filename)
         return RETURN_ERROR;
 
     TRY(packet_ok(sockfd, 0));
+    // printf("AQUI 1\n");
 
     while (1)
     {
         do
         {
-            printf("pau\n");
+            // printf("pau\n");
             // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
-            if (opt.type != DATA || opt.type != ENDTX)
+            // printf("AQUI 2\n");
+            if (opt.type != DATA && opt.type != ENDTX)
+            {
+                debug((uint)opt.type);
                 TRY(packet_nack(sockfd, 0));
-        } while (opt.type != DATA || opt.type != ENDTX);
+            }
+        } while (opt.type != DATA && opt.type != ENDTX);
 
         // TRY(packet_recv(sockfd, buf, &opt));
 

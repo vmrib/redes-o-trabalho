@@ -181,7 +181,7 @@ void test_protc_ls()
         {
             int childsock = rs_socket("lo");
             rs_set_timeout(childsock, TIMEOUT);
-            int err = protc_ls(childsock, "TODO");
+            int err = protc_ls(childsock, "TODO...");
             exit(err);
         }
     }
@@ -208,6 +208,7 @@ void test_protc_ls()
     }
     CHECK(packet_end(sock, 0), "nao foi possivel enviar ENDTX");
     CHECK_CHILD(0, "protc_ls retornou com erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste OK\n");
 
     // teste com NACK
     fork_protc_ls();
@@ -220,6 +221,7 @@ void test_protc_ls()
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK(packet_end(sock, 0), "nao foi possivel enviar ENDTX");
     CHECK_CHILD(0, "protc_ls retornou com erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste NACK\n");
 
     // teste com ERROR
     fork_protc_ls();
@@ -227,6 +229,7 @@ void test_protc_ls()
     CHECK_OPT(opt, LS);
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR (1)\n");
 
     // teste com ERROR 2
     fork_protc_ls();
@@ -243,12 +246,15 @@ void test_protc_ls()
     }
     CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR (2)\n");
 
     // teste com silencio
     fork_protc_ls();
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
+
     CHECK_OPT(opt, LS);
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
 
     // teste com ENDTX
     fork_protc_ls();
@@ -264,6 +270,7 @@ void test_protc_ls()
         CHECK_OPT(opt, ACK);
     }
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste ENDTX\n");
 
     // teste com lixo
     fork_protc_ls();
@@ -280,9 +287,10 @@ void test_protc_ls()
     }
     opt.index = 0;
     opt.size = 16;
-    opt.type = 0b111111;
+    opt.type = 0b101010;
     CHECK(packet_send(sock, "jkshfglaisghasf", opt), "nao foi possivel enviar lixo");
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    printf("%s: %s\n", __FUNCTION__, "passou no teste lixo\n");
 }
 
 void test_protc_get()
@@ -299,24 +307,24 @@ void test_protc_get()
     }
 
     const char *file =
-        "Ela partiu\n                                                     \
-        Partiu e nunca mais voltou\n                                      \
-        Ela sumiu, sumiu e nunca mais voltou\n                            \
-        Se souberem onde ela está\n                                       \
-        Digam-me e vou lá buscá-la\n                                      \
-        Pelo menos telefone em seu nome\n                                 \
-        Me dêumflex uma dica, uma pista, insistaEi! e nunca mais voltou\n \
-        Ela sumiu, sumiu e nunca mais voltou\n                            \
-        Ela partiu, partiu\n                                              \
-        E nunca mais voltou\n                                             \
-        Se eu soubesse onde ela foi iria atrás\n                          \
-        Mas não sei mais nem direção\n                                    \
-        Várias noites que eu não durmo um segundo\n                       \
-        Estou cansado\n                                                   \
-        Magoado exausto\n                                                 \
-        E nunca mais voltou\n";
+        "Ela partiu\n"
+        "Partiu e nunca mais voltou\n"
+        "Ela sumiu, sumiu e nunca mais voltou\n"
+        "Se souberem onde ela está\n"
+        "Digam-me e vou lá buscá-la\n"
+        "Pelo menos telefone em seu nome\n"
+        "Me dêumflex uma dica, uma pista, insistaEi! e nunca mais voltou\n"
+        "Ela sumiu, sumiu e nunca mais voltou\n"
+        "Ela partiu, partiu\n"
+        "E nunca mais voltou\n"
+        "Se eu soubesse onde ela foi iria atrás\n"
+        "Mas não sei mais nem direção\n"
+        "Várias noites que eu não durmo um segundo\n"
+        "Estou cansado\n"
+        "Magoado exausto\n"
+        "E nunca mais voltou\n";
 
-    const size_t filesize = sizeof(file);
+    size_t filesize = strlen(file) + 1;
     // teste tudo ok
     fork_protc_get();
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou GET");
@@ -330,27 +338,35 @@ void test_protc_get()
     opt.index = 0;
     opt.size = sizeof(size_t);
     memcpy(buf, &filesize, sizeof(size_t));
+    // printf("------------------------\n");
     CHECK(packet_send(sock, buf, opt), "nao foi possivel enviar FDESC");
+    // printf("------------------------\n");
 
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou OK");
     CHECK_OPT(opt, OK);
 
     size_t i, j;
-    for (i = 0, j = 0; i < sizeof(file); i += PACKET_DATA_MAX_SIZE, j++)
+    for (i = 0, j = 0; i <= filesize - (PACKET_DATA_MAX_SIZE - 5); i += (PACKET_DATA_MAX_SIZE - 5), j++)
     {
         opt.type = DATA;
         opt.index = j;
-        opt.size = PACKET_DATA_MAX_SIZE;
-        memcpy(buf, file + i, PACKET_DATA_MAX_SIZE);
+        opt.size = PACKET_DATA_MAX_SIZE - 5;
+        memcpy(buf, file + i, opt.size);
+        printf("========================\n");
+        write(STDOUT_FILENO, buf, opt.size);
+        printf("\n========================\n");
         CHECK(packet_send(sock, buf, opt), "nao foi possivel enviar DATA");
         CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
         CHECK_OPT(opt, ACK);
     }
-    i -= PACKET_DATA_MAX_SIZE;
+    // i -= PACKET_DATA_MAX_SIZE - 5;
     opt.type = DATA;
     opt.index = j;
-    opt.size = sizeof(file) - i;
+    opt.size = filesize - i - 1;
     memcpy(buf, file + i, opt.size);
+    printf("========================\n");
+    write(STDOUT_FILENO, buf, opt.size);
+    printf("\n========================\n");
     CHECK(packet_send(sock, buf, opt), "nao foi possivel enviar DATA");
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
     CHECK_OPT(opt, ACK);

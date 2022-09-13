@@ -19,15 +19,16 @@ typedef struct envelope_t
 
 const size_t PACKET_MAX_SIZE = sizeof(envelope_t) + PACKET_DATA_MAX_SIZE;
 
-uint calc_parity(void *data, size_t size)
+u_int8_t calc_parity(void *data, size_t size)
 {
     char parity = 0;
     char *string = (char *)data;
     for (int i = 0; i < size; i++)
     {
         parity ^= string[i];
+        // printf("paridade ^= 0x%X\n", string[i]);
     }
-    // printf("%c\n", parity);
+    // printf("paridade = %u\n", parity);
     return parity;
 }
 
@@ -52,6 +53,17 @@ int packet_send(int sockfd, void *data, packet_options_t options)
     //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
     // }
 
+    // printf("buf sent: ");
+
+    // for (size_t i = 0; i < buf_size; i++)
+    // {
+    //     printf("%X ", buf[i]);
+    // }
+    // printf("\n");
+
+    // printf("parity sent: 0x%X\n", env.parity);
+    // printf("size sent: 0x%X\n", env.size);
+
     TRY(rs_send(sockfd, buf, buf_size));
 
     return RETURN_SUCCESS;
@@ -68,12 +80,19 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     // #endif
 
     rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE);
-    // printf("buf: %s\n", buf);
+    // printf("buf read: %s\n", buf);
 
     // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
     // {
     //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
     // }
+    // printf("buf read: ");
+
+    // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
+    // {
+    //     printf("%X ", buf[i]);
+    // }
+    // printf("\n");
 
     memcpy(&env, buf, sizeof(envelope_t) - 1);
     if (env.start_marker != PACKET_START_MARKER)
@@ -84,9 +103,16 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     }
 
     env.parity = buf[env.size + sizeof(envelope_t) - 1];
+    // printf("parity read from sent: 0x%X\n", env.parity);
+    // printf("size read from sent: 0x%X\n", env.size);
     if (env.parity != calc_parity(buf + sizeof(envelope_t) - 1, env.size))
     {
-        debug((uint)env.parity);
+        // #include <unistd.h>
+        // debug((uint)env.parity);
+        // debug(calc_parity(buf + sizeof(envelope_t) - 1, env.size));
+        // debug((uint)env.size);
+        //         printf("bla %u\n", buf + sizeof(envelope_t) - 1);
+        // write(STDOUT_FILENO, buf + sizeof(envelope_t) - 1, env.size);
         // printf("IF 2\n");
         return RETURN_ERROR;
     }

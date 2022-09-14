@@ -22,6 +22,9 @@ int protc_cd(int sockfd, char *dirname)
         opt.type = CD;
         TRY(packet_send(sockfd, dirname, opt));
 
+        // while (opt.type == EMPTY || opt.type != ERROR || opt.type != OK || opt.type != NACK)
+        //     TRY(packet_recv(sockfd, buf, &opt));
+
         // while (opt.index == c_index)
         // {
         //     TRY(packet_recv(sockfd, buf, &opt));
@@ -32,8 +35,12 @@ int protc_cd(int sockfd, char *dirname)
 
     // c_index++; // se funcionou
 
-    if (opt.type == ERROR || opt.type != OK)
+    // while (opt.type == EMPTY || opt.type != ERROR || opt.type != OK)
+    //     TRY(packet_recv(sockfd, buf, &opt));
+
+    if (opt.type == ERROR)
     {
+        errno = buf[0];
         // debug((uint)opt.type);
         return RETURN_ERROR;
     }
@@ -103,6 +110,7 @@ int protc_ls(int sockfd, char *arg)
         if (opt.type == ERROR)
         {
             // Tratar ?? Erro enviado propositalmente pelo server
+            errno = buf[0];
             return RETURN_ERROR;
         }
 
@@ -180,8 +188,11 @@ int protc_mkdir(int sockfd, char *dirname)
 
     // c_index++;
 
-    if (opt.type == ERROR || opt.type != OK)
+    if (opt.type == ERROR) // || opt.type != OK)
+    {
+        errno = buf[0];
         return RETURN_ERROR;
+    }
 
     return RETURN_SUCCESS;
 }

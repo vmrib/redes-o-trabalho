@@ -375,7 +375,10 @@ int local_ls(char *flag) // talvez devesse passar separado o comando e as opcoes
     else if (!strcmp(flag, "\0")) // sem opcoes
         TRY(system("ls"));
     else
-        printf("ERRO: flag '%s' nao reconhecida\n", flag);
+    {
+        // printf("ERRO: flag '%s' nao reconhecida\n", flag);
+        return RETURN_ERROR;
+    }
 
     return RETURN_SUCCESS;
 }

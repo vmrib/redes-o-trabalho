@@ -1,6 +1,7 @@
 #include "raw_socket.h"
 #include "packet.h"
 #include "prot_client.h"
+#include "error.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -25,60 +26,69 @@ int main(int argc, char const *argv[])
     //     return 1;
     // }
 
-
     // linha: todo o input do usuario (ls -a)
     // comando: apenas o comando na linha (ls)
     // opt: a opcao ou argumento do comando (-a)
     char linha[64], comando[64], opt[10];
 
-    while(1)
+    while (1)
     {
         packet_reset(&p_opt);
         // printf("cliente_$ ");
-        printf("%c[%d;%dm\ncliente_$ %c[%dm",27,1,32,27,1);
+        printf("%c[%d;%dm\ncliente_$ %c[%dm", 27, 1, 32, 27, 1);
         scanf(" %[^\n]", linha);
 
         char *token = strtok(linha, " ");
         strcpy(comando, token);
 
         token = strtok(NULL, " ");
-        if(token != NULL)
+        if (token != NULL)
             strcpy(opt, token);
         else
             strcpy(opt, "\0");
 
-
-        if(!strcmp(comando, "ls"))
+        if (!strcmp(comando, "ls"))
         {
-            local_ls(opt);
+            if (local_ls(opt) == RETURN_ERROR)
+                printf("\e[31mErro: flag \'%s\' não reconhecida.\n\e[0m", opt);
         }
-        else if(!strcmp(comando, "cd"))
+        else if (!strcmp(comando, "cd"))
         {
-            local_cd(opt);
+            if (local_cd(opt) == RETURN_ERROR)
+                printf("\e[31mErro: não foi possível acessar diretório \'%s\'.\n\e[0m", opt);
         }
-        else if(!strcmp(comando, "mkdir"))
+        else if (!strcmp(comando, "mkdir"))
         {
-            local_mkdir(opt);
+            if (local_mkdir(opt) == RETURN_ERROR)
+                printf("\e[31mErro: não foi possível criar diretório \'%s\'.\n\e[0m", opt);
         }
-        else if(!strcmp(comando, "smkdir"))
+        else if (!strcmp(comando, "smkdir"))
         {
             protc_mkdir(socket, opt);
         }
-        else if(!strcmp(comando, "scd"))
+        else if (!strcmp(comando, "scd"))
         {
             protc_cd(socket, opt);
         }
-        else if(!strcmp(comando, "sls"))
+        else if (!strcmp(comando, "sls"))
         {
             protc_ls(socket, opt);
         }
-        else if(!strcmp(comando, "put"))
+        else if (!strcmp(comando, "put"))
         {
-            continue;
+            protc_put(socket, opt);
         }
-        else if(!strcmp(comando, "get"))
+        else if (!strcmp(comando, "get"))
         {
-            continue;
+            protc_get(socket, opt);
+        }
+        else if (!strcmp(comando, "exit"))
+        {
+            break;
+        }
+        else
+        {
+            printf("\e[31mErro: comando \'%s\' não reconhecido.\e[0m\n", comando);
         }
     }
 

@@ -10,7 +10,7 @@ int protc_mkdir(int sockfd, char *dirname);
 
 int protc_get(int sockfd, char *filename);
 
-int protc_put(int sockfd, int fd);
+int protc_put(int sockfd, char *filename);
 
 int local_ls(char *flag);
 

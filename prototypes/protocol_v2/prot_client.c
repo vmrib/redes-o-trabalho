@@ -131,7 +131,7 @@ int protc_ls(int sockfd, char *arg)
         // if (opt.type != SHOW)
         //     return RETURN_ERROR;
 
-        if(opt.type == SHOW)
+        if (opt.type == SHOW)
         {
             // printf("SHOW: ");
             printf("%s", buf); // opt.type == SHOW
@@ -230,6 +230,9 @@ int protc_get(int sockfd, char *filename)
             // printf("pau\n");
             // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
+
+            while (opt.type == EMPTY)
+                TRY(packet_recv(sockfd, buf, &opt));
             // printf("AQUI 2\n");
             if (opt.type != DATA && opt.type != ENDTX)
             {
@@ -255,6 +258,107 @@ int protc_get(int sockfd, char *filename)
 
     //     if (opt.type == ERROR)
     //         return -1;
+
+    return RETURN_SUCCESS;
+}
+
+int protc_put(int sockfd, char *filename)
+{
+    packet_options_t opt, data_opt;
+    char buf[PACKET_DATA_MAX_SIZE], data_buf[PACKET_DATA_MAX_SIZE];
+
+    FILE *file = fopen(filename, "rb");
+    if (!file)
+        return RETURN_ERROR;
+
+    fseek(file, 0, SEEK_END);      // seek to end of file
+    size_t filesize = ftell(file); // get current file pointer
+    fseek(file, 0, SEEK_SET);      // seek back to beginning of file
+
+    // Envia PUT
+    do
+    {
+        opt.index = 0;
+        opt.size = strlen(filename) + 1;
+        opt.type = PUT;
+        TRY(packet_send(sockfd, filename, opt));
+
+        // printf(" ================================== \n");
+        TRY(packet_recv(sockfd, buf, &opt));
+        // printf(" ================================== \n");
+
+    } while (opt.type == NACK);
+
+    if (opt.type == ERROR)
+        return RETURN_ERROR;
+
+    // envia FDESC
+    do
+    {
+        opt.index = 0;
+        opt.size = sizeof(size_t);
+        opt.type = FDESC;
+        TRY(packet_send(sockfd, &filesize, opt));
+
+        // printf(" ================================== \n");
+        TRY(packet_recv(sockfd, buf, &opt));
+        // printf(" ================================== \n");
+
+    } while (opt.type == NACK);
+
+    if (opt.type == ERROR)
+        return RETURN_ERROR;
+
+    data_opt.size = 1; // gambiarra
+
+    // envia dados
+    while (1)
+    {
+        while (opt.type == EMPTY)
+        {
+            TRY(packet_recv(sockfd, buf, &opt));
+            continue;
+        }
+
+        while (opt.type == NACK)
+        {
+            TRY(packet_send(sockfd, data_buf, data_opt));
+            // printf(" ================================== \n");
+            TRY(packet_recv(sockfd, buf, &opt));
+        }
+
+        if (opt.type == ERROR)
+            return RETURN_ERROR;
+
+        if (!data_opt.size)
+            break;
+
+        // memcpy(last_buf, buf, opt.size);
+        // last_opt = opt;
+
+        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE - 5, file);
+        data_opt.index = 0;
+        data_opt.type = DATA;
+        TRY(packet_send(sockfd, data_buf, data_opt));
+
+        TRY(packet_recv(sockfd, buf, &opt));
+    }
+
+    // envia ENDTX
+    do
+    {
+        TRY(packet_end(sockfd, 0));
+
+        // printf(" ================================== \n");
+        TRY(packet_recv(sockfd, buf, &opt));
+        // printf(" ================================== \n");
+
+    } while (opt.type == NACK);
+
+    if (opt.type == ERROR)
+        return RETURN_ERROR;
+
+    fclose(file);
 
     return RETURN_SUCCESS;
 }

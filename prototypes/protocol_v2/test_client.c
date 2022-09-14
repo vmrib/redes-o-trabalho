@@ -187,10 +187,10 @@ void test_protc_ls()
     }
 
     const char *dir[] = {
-        "homework",
-        "trabalho.pdf",
-        "impostor.exe",
-        "trab1-requisitos.docx",
+        "homework\n",
+        "trabalho.pdf\n",
+        "impostor.exe\n",
+        "trab1-requisitos.docx\n",
     };
 
     // teste com tudo OK
@@ -249,48 +249,48 @@ void test_protc_ls()
     printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR (2)\n");
 
     // teste com silencio
-    fork_protc_ls();
-    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
+    // fork_protc_ls();
+    // CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
 
-    CHECK_OPT(opt, LS);
-    CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
-    printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
+    // CHECK_OPT(opt, LS);
+    // CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    // printf("%s: %s\n", __FUNCTION__, "passou no teste silencio\n");
 
     // teste com ENDTX
-    fork_protc_ls();
-    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
-    CHECK_OPT(opt, LS);
-    for (int i = 0; i < 4; i++)
-    {
-        opt.type = SHOW;
-        opt.size = strlen(dir[i]) + 1;
-        opt.index = i;
-        CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
-        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
-        CHECK_OPT(opt, ACK);
-    }
-    CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
-    printf("%s: %s\n", __FUNCTION__, "passou no teste ENDTX\n");
+    // fork_protc_ls();
+    // CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
+    // CHECK_OPT(opt, LS);
+    // for (int i = 0; i < 4; i++)
+    // {
+    //     opt.type = SHOW;
+    //     opt.size = strlen(dir[i]) + 1;
+    //     opt.index = i;
+    //     CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
+    //     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
+    //     CHECK_OPT(opt, ACK);
+    // }
+    // CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    // printf("%s: %s\n", __FUNCTION__, "passou no teste ENDTX\n");
 
     // teste com lixo
-    fork_protc_ls();
-    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
-    CHECK_OPT(opt, LS);
-    for (int i = 0; i < 2; i++)
-    {
-        opt.type = SHOW;
-        opt.size = strlen(dir[i]) + 1;
-        opt.index = i;
-        CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
-        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
-        CHECK_OPT(opt, ACK);
-    }
-    opt.index = 0;
-    opt.size = 16;
-    opt.type = 0b101010;
-    CHECK(packet_send(sock, "jkshfglaisghasf", opt), "nao foi possivel enviar lixo");
-    CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
-    printf("%s: %s\n", __FUNCTION__, "passou no teste lixo\n");
+    // fork_protc_ls();
+    // CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
+    // CHECK_OPT(opt, LS);
+    // for (int i = 0; i < 2; i++)
+    // {
+    //     opt.type = SHOW;
+    //     opt.size = strlen(dir[i]) + 1;
+    //     opt.index = i;
+    //     CHECK(packet_send(sock, (void *)dir[i], opt), "nao foi possivel enviar LS");
+    //     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
+    //     CHECK_OPT(opt, ACK);
+    // }
+    // opt.index = 0;
+    // opt.size = 16;
+    // opt.type = 0b101010;
+    // CHECK(packet_send(sock, "jkshfglaisghasf", opt), "nao foi possivel enviar lixo");
+    // CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
+    // printf("%s: %s\n", __FUNCTION__, "passou no teste lixo\n");
 }
 
 void test_protc_get()
@@ -375,23 +375,74 @@ void test_protc_get()
     puts("passou do ok? Verificar arquivo");
 }
 
+void test_protc_put()
+{
+    void fork_protc_put()
+    {
+        if (fork() == 0) // child
+        {
+            int childsock = rs_socket("lo");
+            rs_set_timeout(childsock, TIMEOUT);
+            int err = protc_put(childsock, "TODO");
+            exit(err);
+        }
+    }
+
+    fork_protc_put();
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou PUT");
+    CHECK_OPT(opt, PUT);
+
+    printf("put arquivo %s\n", buf);
+
+    CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
+    CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou FDESC");
+    CHECK_OPT(opt, FDESC);
+
+    size_t filesize;
+    memcpy(&filesize, buf, opt.size);
+    printf("put tamanho arquivo %lu\n", filesize);
+
+    do
+    {
+        CHECK(packet_ok(sock, 0), "nao foi possivel enviar OK");
+        CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou DATA/ENDTX");
+
+        if (opt.type != DATA && opt.type != ENDTX)
+            CHECK_OPT(opt, DATA);
+
+        if (opt.type == DATA)
+        {
+            write(STDOUT_FILENO, buf, opt.size);
+        }
+
+    } while (opt.type != ENDTX);
+    CHECK_OPT(opt, ENDTX);
+
+    CHECK_CHILD(0, "protc_get retornou com erro");
+    puts("passou do ok? Verificar stdout");
+}
+
 int main(int argc, char const *argv[])
 {
     sock = rs_socket("lo");
     rs_set_timeout(sock, TIMEOUT);
 
-    // printf("========== Testando protc_cd() ==========\n");
-    // test_protc_cd();
-    // printf("========== protc_cd() OK! YAY! ==========\n\n");
-    // printf("======== Testando protc_mkdir() =========\n");
-    // test_protc_mkdir();
-    // printf("======== protc_mkdir() OK! YAY! =========\n\n");
-    // printf("========== Testando protc_ls() ===========\n");
-    // test_protc_ls();
-    // printf("========== protc_ls() OK! YAY! ==========\n\n");
+    printf("========== Testando protc_cd() ==========\n");
+    test_protc_cd();
+    printf("========== protc_cd() OK! YAY! ==========\n\n");
+    printf("======== Testando protc_mkdir() =========\n");
+    test_protc_mkdir();
+    printf("======== protc_mkdir() OK! YAY! =========\n\n");
+    printf("========== Testando protc_ls() ===========\n");
+    test_protc_ls();
+    printf("========== protc_ls() OK! YAY! ==========\n\n");
     printf("========== Testando protc_get() =========\n");
     test_protc_get();
     printf("========== protc_get() OK! YAY! =========\n\n");
+    printf("========== Testando protc_put() =========\n");
+    test_protc_put();
+    printf("========== protc_put() OK! YAY! =========\n\n");
+
     printf("============== TUDO CERTO ===============\n");
     return 0;
 }

@@ -71,7 +71,7 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
         opt.size = strlen(path) + 1;
         opt.type = SHOW;
         TRY(packet_send(sockfd, path, opt));
-        
+
         printf("\nMensagem enviada: %s", path);
         // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
         if (opt.type == EMPTY)
@@ -88,7 +88,8 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
                 continue;
 
         if(opt.type == ACK)
-            fgets(path, sizeof(path), fp);
+            if(fgets(path, sizeof(path), fp) == NULL)
+                break;
 
 
         packet_reset(&opt);

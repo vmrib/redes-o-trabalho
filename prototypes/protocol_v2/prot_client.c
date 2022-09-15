@@ -45,7 +45,11 @@ int protc_cd(int sockfd, char *dirname)
         return RETURN_ERROR;
     }
 
-    return RETURN_SUCCESS;
+    if (opt.type == OK)
+        return RETURN_SUCCESS;
+
+    errno = EINTEGRITY;
+    return RETURN_ERROR;
 }
 
 int protc_ls(int sockfd, char *arg)
@@ -223,13 +227,22 @@ int protc_get(int sockfd, char *filename)
 
     // TRY(packet_recv(sockfd, buf, &opt));
     if (opt.type != FDESC)
+    {
+        errno = EINTEGRITY;
         return RETURN_ERROR;
+    }
 
     // testar se conteudo de FDESC está ok. Enviar ERROR caso não.
 
-    FILE *file = fopen(filename, "wb");
+    FILE *file = fopen(filename, "wb"); // seta errno
     if (!file)
+    {
+        // converte erro de acesso da fopen() para erro de acesso do protocolo
+        if (errno == EACCES)
+            errno = EPERMISSION;
+
         return RETURN_ERROR;
+    }
 
     TRY(packet_ok(sockfd, 0));
     // printf("AQUI 1\n");
@@ -278,9 +291,21 @@ int protc_put(int sockfd, char *filename)
     packet_options_t opt, data_opt;
     char buf[PACKET_DATA_MAX_SIZE], data_buf[PACKET_DATA_MAX_SIZE];
 
+    if (access(filename, F_OK) != 0) // arquivo não existe
+    {
+        errno = ENOFILE;
+        return RETURN_ERROR;
+    }
+
     FILE *file = fopen(filename, "rb");
     if (!file)
+    {
+        // converte tipo do erro de acesso da fopen para protocolo
+        if (errno == EACCES)
+            errno = EPERMISSION;
+
         return RETURN_ERROR;
+    }
 
     fseek(file, 0, SEEK_END);      // seek to end of file
     size_t filesize = ftell(file); // get current file pointer
@@ -301,7 +326,10 @@ int protc_put(int sockfd, char *filename)
     } while (opt.type == NACK);
 
     if (opt.type == ERROR)
+    {
+        errno = buf[0];
         return RETURN_ERROR;
+    }
 
     // envia FDESC
     do
@@ -318,7 +346,10 @@ int protc_put(int sockfd, char *filename)
     } while (opt.type == NACK);
 
     if (opt.type == ERROR)
+    {
+        errno = buf[0];
         return RETURN_ERROR;
+    }
 
     data_opt.size = 1; // gambiarra
 
@@ -339,7 +370,10 @@ int protc_put(int sockfd, char *filename)
         }
 
         if (opt.type == ERROR)
+        {
+            errno = buf[0];
             return RETURN_ERROR;
+        }
 
         if (!data_opt.size)
             break;
@@ -367,7 +401,10 @@ int protc_put(int sockfd, char *filename)
     } while (opt.type == NACK);
 
     if (opt.type == ERROR)
+    {
+        errno = buf[0];
         return RETURN_ERROR;
+    }
 
     fclose(file);
 

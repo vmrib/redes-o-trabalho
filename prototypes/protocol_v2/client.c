@@ -64,23 +64,63 @@ int main(int argc, char const *argv[])
         }
         else if (!strcmp(comando, "smkdir"))
         {
-            protc_mkdir(socket, opt);
+            while (protc_mkdir(socket, opt) == RETURN_ERROR)
+            {
+                // se deu timeout ou os dados perderam integridade reenvia
+                if (errno == ETIMEDOUT || errno == EINTEGRITY)
+                    continue;
+
+                print_erro(errno);
+                break;
+            }
         }
         else if (!strcmp(comando, "scd"))
         {
-            protc_cd(socket, opt);
+            while (protc_cd(socket, opt) == RETURN_ERROR)
+            {
+                // se deu timeout ou os dados perderam integridade reenvia
+                if (errno == ETIMEDOUT || errno == EINTEGRITY)
+                    continue;
+
+                print_erro(errno);
+                break;
+            }
         }
         else if (!strcmp(comando, "sls"))
         {
-            protc_ls(socket, opt);
+            while (protc_ls(socket, opt) == RETURN_ERROR)
+            {
+                // se deu timeout ou os dados perderam integridade reenvia
+                if (errno == ETIMEDOUT || errno == EINTEGRITY)
+                    continue;
+
+                print_erro(errno);
+                break;
+            }
         }
         else if (!strcmp(comando, "put"))
         {
-            protc_put(socket, opt);
+            while (protc_put(socket, opt) == RETURN_ERROR)
+            {
+                // se deu timeout ou os dados perderam integridade reenvia
+                if (errno == ETIMEDOUT || errno == EINTEGRITY)
+                    continue;
+
+                print_erro(errno);
+                break;
+            }
         }
         else if (!strcmp(comando, "get"))
         {
-            protc_get(socket, opt);
+            while (protc_get(socket, opt) == RETURN_ERROR)
+            {
+                // se deu timeout ou os dados perderam integridade reenvia
+                if (errno == ETIMEDOUT || errno == EINTEGRITY)
+                    continue;
+
+                print_erro(errno);
+                break;
+            }
         }
         else if (!strcmp(comando, "exit"))
         {

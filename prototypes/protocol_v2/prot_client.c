@@ -138,7 +138,10 @@ int protc_ls(int sockfd, char *arg)
         // printf("tipo: %d\n", opt.type);
 
         if (opt.type == ENDTX)
+        {
+            printf("Recebeu ENDTX\a\n");
             break;
+        }
 
         // printf("AQUI 4\n");
 

@@ -8,7 +8,13 @@
 
 int main(int argc, char const *argv[])
 {
+
+#ifdef NOLOOPBACK
     int socket = rs_socket("enp2s0");
+#else
+    int socket = rs_socket("lo");
+#endif
+
     char buf[1024];
     packet_options_t c;
 
@@ -38,6 +44,7 @@ int main(int argc, char const *argv[])
         switch (c.type)
         {
         case (LS):
+            printf("chamando todos os cornos\a\n");
             prots_ls(socket, buf);
             break;
 

@@ -83,20 +83,19 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
         else
             printf("Tipo: %u\n", opt.type);
 
-        if(packet_recv(sockfd, buf, &opt) == -1)
-            if(errno == ETIMEDOUT)
+        if (packet_recv(sockfd, buf, &opt) == -1)
+            if (errno == ETIMEDOUT)
                 continue;
 
-        if(opt.type == ACK)
-            if(fgets(path, sizeof(path), fp) == NULL)
+        if (opt.type == ACK)
+            if (fgets(path, sizeof(path), fp) == NULL)
                 break;
 
-
         packet_reset(&opt);
-
     }
 
     TRY(packet_end(sockfd, s_index));
+    printf("FIM DO PACOTE CARAI\n");
     s_index++;
     printf("index: %d\n", s_index);
 

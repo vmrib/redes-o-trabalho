@@ -2,6 +2,7 @@
 #include "packet.h"
 #include "prot_client.h"
 #include "error.h"
+#include "debug.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -10,7 +11,11 @@
 int main(int argc, char const *argv[])
 {
     packet_options_t p_opt;
-    int socket = rs_socket("enp3s0");
+#ifdef NOLOOPBACK
+    int socket = rs_socket("enp2s0");
+#else
+    int socket = rs_socket("lo");
+#endif
     // char *opt1 = "-la";
 
     rs_set_timeout(socket, (uint)5e6);
@@ -80,7 +85,10 @@ int main(int argc, char const *argv[])
             {
                 // se deu timeout ou os dados perderam integridade reenvia
                 if (errno == ETIMEDOUT || errno == EINTEGRITY)
+                {
+                    debug(errno);
                     continue;
+                }
 
                 print_erro(errno);
                 break;

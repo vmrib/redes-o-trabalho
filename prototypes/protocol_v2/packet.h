@@ -4,15 +4,6 @@
 
 #define PACKET_DATA_MAX_SIZE 63
 
-#define PACKET_ACK(sockfd, index) \
-    packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = ACK})
-
-#define PACKET_NACK(sockfd, index) \
-    packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = NACK})
-
-#define PACKET_OK(sockfd, index) \
-    packet_send(sockfd, NULL, (packet_options_t){.index = index, .size = 0, .type = OK})
-
 typedef enum
 {
     ACK = 0b000011,

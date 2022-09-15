@@ -57,7 +57,7 @@ void test_protc_cd()
         {
             int childsock = rs_socket("lo");
             rs_set_timeout(childsock, TIMEOUT);
-            int err = protc_cd(childsock, "panzerkampfwagen");
+            int err = prots_cd(childsock, "panzerkampfwagen");
             exit(err);
         }
     }

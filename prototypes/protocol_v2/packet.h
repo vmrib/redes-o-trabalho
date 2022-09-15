@@ -39,7 +39,7 @@ int packet_nack(int sockfd, uint index);
 
 int packet_ok(int sockfd, uint index);
 
-int packet_error(int sockfd, char *desc, uint index);
+int packet_error(int sockfd, int errcode, uint index);
 
 int packet_end(int sockfd, uint index);
 

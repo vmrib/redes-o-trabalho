@@ -172,6 +172,18 @@ void test_prots_mkdir()
 void test_prots_ls()
 {
     fork_prots_ls("");
+    do
+    {
+        CHECK(packet_recv(sock, buf, &opt), "servidor não enviou SHOW/ENDTX");
+
+        if (opt.type == ENDTX)
+            break;
+
+        CHECK_OPT(opt, SHOW);
+        printf("%s", buf);
+        CHECK(packet_ack(sock, 0), "não foi possível enviar ACK.");
+
+    } while (1);
 }
 
 int main()
@@ -179,15 +191,15 @@ int main()
     sock = rs_socket("lo");
     rs_set_timeout(sock, TIMEOUT);
 
-    printf("========== Testando prots_cd() ==========\n");
-    test_prots_cd();
-    printf("========== prots_cd() OK! YAY! ==========\n\n");
-    printf("======== Testando prots_mkdir() =========\n");
-    test_prots_mkdir();
-    printf("======== prots_mkdir() OK! YAY! =========\n\n");
-    // printf("========== Testando prots_ls() ===========\n");
-    // test_prots_ls();
-    // printf("========== prots_ls() OK! YAY! ==========\n\n");
+    // printf("========== Testando prots_cd() ==========\n");
+    // test_prots_cd();
+    // printf("========== prots_cd() OK! YAY! ==========\n\n");
+    // printf("======== Testando prots_mkdir() =========\n");
+    // test_prots_mkdir();
+    // printf("======== prots_mkdir() OK! YAY! =========\n\n");
+    printf("========== Testando prots_ls() ===========\n");
+    test_prots_ls();
+    printf("========== prots_ls() OK! YAY! ==========\n\n");
     // printf("========== Testando prots_get() =========\n");
     // test_prots_get();
     // printf("========== prots_get() OK! YAY! =========\n\n");

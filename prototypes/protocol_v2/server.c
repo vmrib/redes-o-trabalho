@@ -17,10 +17,10 @@ int main(int argc, char const *argv[])
     char linha[64], comando[64], opt[10];
 
     int ultimo = -1;
-    while(1)
+    while (1)
     {
         packet_reset(&c);
-        
+
         // if(packet_recv(socket, buf, &c) == -1)
         //     continue;
         // while (packet_recv(socket, buf, &c) == -1){}
@@ -48,11 +48,14 @@ int main(int argc, char const *argv[])
         case (CD):
             prots_cd(socket, buf);
             break;
-        
+
+        case (GET):
+            prots_get(socket, buf);
+            break;
+
         default:
             break;
         }
-
     }
 
     // // printf("AQUI\n");

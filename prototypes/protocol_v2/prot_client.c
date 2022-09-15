@@ -8,7 +8,7 @@
 #include "error.h"
 #include "debug.h"
 
-// uint c_index = 0;
+uint c_index = 0;
 
 int protc_cd(int sockfd, char *dirname)
 {
@@ -21,6 +21,7 @@ int protc_cd(int sockfd, char *dirname)
         opt.size = strlen(dirname) + 1;
         opt.type = CD;
         TRY(packet_send(sockfd, dirname, opt));
+        c_index++;
 
         // while (opt.type == EMPTY || opt.type != ERROR || opt.type != OK || opt.type != NACK)
         //     TRY(packet_recv(sockfd, buf, &opt));
@@ -65,6 +66,7 @@ int protc_ls(int sockfd, char *arg)
         opt.size = strlen(arg) + 1;
         opt.type = LS;
         TRY(packet_send(sockfd, arg, opt));
+        c_index++;
 
         // printf("AQUI 0\n");
 
@@ -185,6 +187,7 @@ int protc_mkdir(int sockfd, char *dirname)
         opt.size = strlen(dirname) + 1;
         opt.type = MKDIR;
         TRY(packet_send(sockfd, dirname, opt));
+        c_index++;
 
         TRY(packet_recv(sockfd, buf, &opt));
 
@@ -212,6 +215,7 @@ int protc_get(int sockfd, char *filename)
         opt.size = strlen(filename) + 1;
         opt.type = GET;
         TRY(packet_send(sockfd, filename, opt));
+        c_index++;
 
         // printf(" ================================== \n");
         TRY(packet_recv(sockfd, buf, &opt));
@@ -318,6 +322,7 @@ int protc_put(int sockfd, char *filename)
         opt.size = strlen(filename) + 1;
         opt.type = PUT;
         TRY(packet_send(sockfd, filename, opt));
+        c_index++;
 
         // printf(" ================================== \n");
         TRY(packet_recv(sockfd, buf, &opt));
@@ -338,6 +343,7 @@ int protc_put(int sockfd, char *filename)
         opt.size = sizeof(size_t);
         opt.type = FDESC;
         TRY(packet_send(sockfd, &filesize, opt));
+        c_index++;
 
         // printf(" ================================== \n");
         TRY(packet_recv(sockfd, buf, &opt));
@@ -365,6 +371,7 @@ int protc_put(int sockfd, char *filename)
         while (opt.type == NACK)
         {
             TRY(packet_send(sockfd, data_buf, data_opt));
+            c_index++;
             // printf(" ================================== \n");
             TRY(packet_recv(sockfd, buf, &opt));
         }
@@ -385,6 +392,7 @@ int protc_put(int sockfd, char *filename)
         data_opt.index = 0;
         data_opt.type = DATA;
         TRY(packet_send(sockfd, data_buf, data_opt));
+        c_index++;
 
         TRY(packet_recv(sockfd, buf, &opt));
     }

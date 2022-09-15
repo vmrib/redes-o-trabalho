@@ -19,7 +19,7 @@ int prots_cd(int sockfd, const char *dirname) // retorna OK, NACK ou ERRO
     if (!resultado)
         packet_ok(sockfd, s_index);
     else
-        packet_error(sockfd, "ERRO", s_index); // descrever melhor os erros
+        packet_error(sockfd, ENODIR, s_index); // descrever melhor os erros
 
     // opt.index = s_index; // receber? global?
     // s_index++;
@@ -51,6 +51,7 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
 
     if (fp == NULL)
     {
+        TRY(packet_error(sockfd, EPERMISSION, s_index));
         printf("Failed to run command\n");
         exit(1);
     }
@@ -125,7 +126,7 @@ int prots_mkdir(int sockfd, char *dirname) // retorna OK, NACK ou ERRO
     strcat(mkdir, dirname);
     if (system(mkdir) != 0)
     {
-        TRY(packet_error(sockfd, "ERRO", s_index));
+        TRY(packet_error(sockfd, EALREADYDIR, s_index));
     }
     else
     {
@@ -136,10 +137,47 @@ int prots_mkdir(int sockfd, char *dirname) // retorna OK, NACK ou ERRO
     return RETURN_SUCCESS;
 }
 
-int prots_get(int sockfd)
+int prots_get(int sockfd, char *dirname)
 {
+    packet_options_t opt;
+    char buf[PACKET_DATA_MAX_SIZE];
+
+    FILE *file = fopen(dirname, "rb");
+
+    if (file == NULL)
+    {
+        TRY(packet_error(sockfd, ENOFILE, s_index));
+        s_index++;
+        printf("get: %s\n", dirname);
+        return RETURN_SUCCESS;
+    }
+
+    fseek(file, 0, SEEK_END);      // seek to end of file
+    size_t filesize = ftell(file); // get current file pointer
+    fseek(file, 0, SEEK_SET);      // seek back to beginning of file
+
+    opt.type = FDESC;
+    opt.index = s_index;
+    opt.size = sizeof(size_t);
+    TRY(packet_send(sockfd, &filesize, opt));
+
+    TRY(packet_recv(sockfd, buf, &opt));
+
+    if (opt.type == ERROR) // cliente deu pau, a gente só aceita
+    {
+        return RETURN_SUCCESS;
+    }
+
+    while (opt.size = fread(buf, sizeof(char), PACKET_DATA_MAX_SIZE - 5, file))
+    {
+        opt.type = DATA;
+        opt.index = s_index;
+        TRY(packet_send(sockfd, buf, opt));
+
+        TRY(packet_recv(sockfd, buf, &opt));
+        }
 }
 
-int prots_put(int sockfd)
+int prots_put(int sockfd, char *dirname)
 {
 }

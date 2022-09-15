@@ -163,14 +163,14 @@ int packet_ok(int sockfd, uint index)
     return RETURN_SUCCESS;
 }
 
-int packet_error(int sockfd, char *description, uint index)
+int packet_error(int sockfd, int errcode, uint index)
 {
     packet_options_t opt = {
         .index = index,
-        .size = strlen(description) + 1,
+        .size = sizeof(int),
         .type = ERROR,
     };
-    TRY(packet_send(sockfd, description, opt));
+    TRY(packet_send(sockfd, &errcode, opt));
 
     return RETURN_SUCCESS;
 }

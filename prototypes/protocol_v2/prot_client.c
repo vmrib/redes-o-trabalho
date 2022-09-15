@@ -17,6 +17,7 @@ int protc_cd(int sockfd, char *dirname)
 
     do
     {
+        printf("cd\n");
         opt.index = 0;
         opt.size = strlen(dirname) + 1;
         opt.type = CD;
@@ -43,11 +44,15 @@ int protc_cd(int sockfd, char *dirname)
     {
         errno = buf[0];
         // debug((uint)opt.type);
+        printf("ERRO\n");
         return RETURN_ERROR;
     }
 
     if (opt.type == OK)
+    {
+        printf("OK\n");
         return RETURN_SUCCESS;
+    }
 
     errno = EINTEGRITY;
     return RETURN_ERROR;

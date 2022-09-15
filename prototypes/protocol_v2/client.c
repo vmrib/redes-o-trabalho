@@ -12,7 +12,7 @@ int main(int argc, char const *argv[])
 {
     packet_options_t p_opt;
 #ifdef NOLOOPBACK
-    int socket = rs_socket("enp2s0");
+    int socket = rs_socket("enp3s0");
 #else
     int socket = rs_socket("lo");
 #endif

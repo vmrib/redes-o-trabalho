@@ -123,7 +123,7 @@ int prots_mkdir(int sockfd, char *dirname) // retorna OK, NACK ou ERRO
 {
     char mkdir[64] = "mkdir ";
     strcat(mkdir, dirname);
-    if (system(mkdir) == 1)
+    if (system(mkdir) != 0)
     {
         TRY(packet_error(sockfd, "ERRO", s_index));
     }

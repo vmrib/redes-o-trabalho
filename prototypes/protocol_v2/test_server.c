@@ -11,7 +11,7 @@
 
 #define TIMEOUT (uint)1e6
 
-int sock;
+int sock, ret;
 packet_options_t opt;
 char buf[PACKET_DATA_MAX_SIZE];
 
@@ -30,9 +30,20 @@ char buf[PACKET_DATA_MAX_SIZE];
 #define CHECK_CHILD(expected, msg)                                                 \
     do                                                                             \
     {                                                                              \
+        if (ret != (u_int8_t)(expected))                                           \
+        {                                                                          \
+            fprintf(stderr, "[ERROR] %s:%d -> %s\n", __FUNCTION__, __LINE__, msg); \
+            exit(1);                                                               \
+        }                                                                          \
+    } while (0)
+
+// checa se processo child retornou codigo esperado
+#define CHECK_CHILD2(expected, msg)                                                \
+    do                                                                             \
+    {                                                                              \
         int status;                                                                \
         wait(&status);                                                             \
-        if (WEXITSTATUS(status) != (u_int8_t)(expected))                           \
+        if (WEXITSTATUS(status) != (u_int8_t)expected)                             \
         {                                                                          \
             fprintf(stderr, "[ERROR] %s:%d -> %s\n", __FUNCTION__, __LINE__, msg); \
             exit(1);                                                               \
@@ -49,100 +60,118 @@ char buf[PACKET_DATA_MAX_SIZE];
         }                                                                                           \
     } while (0)
 
-void fork_prots_cd(const char *dir)
+int fork_prots_cd(const char *dir)
 {
     // if (fork() == 0) // child
     // {
     int childsock = rs_socket("lo");
     rs_set_timeout(childsock, TIMEOUT);
     int err = prots_cd(childsock, dir);
-    exit(err);
+    return err;
     // }
 }
 
-void fork_prots_mkdir(const char *dir)
+int fork_prots_mkdir(const char *dir)
 {
     // if (fork() == 0) // child
     // {
     int childsock = rs_socket("lo");
     rs_set_timeout(childsock, TIMEOUT);
     int err = prots_mkdir(childsock, dir);
-    exit(err);
+    return err;
     // }
+}
+
+void fork_prots_ls(const char *flag)
+{
+    if (fork() == 0) // child
+    {
+        int childsock = rs_socket("lo");
+        rs_set_timeout(childsock, TIMEOUT);
+        int err = prots_ls(childsock, flag);
+        exit(err);
+    }
 }
 
 void test_prots_cd()
 {
     system("pwd");
-    prots_cd(sock, ".");
+    ret = fork_prots_cd(".");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("..");
+    ret = fork_prots_cd("..");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("protocol_v2");
+    ret = fork_prots_cd("protocol_v2");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("oi");
+    ret = fork_prots_cd("oi");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("..");
+    ret = fork_prots_cd("..");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("askfssdfds");
+    ret = fork_prots_cd("askfssdfds");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou ERRO");
     CHECK_OPT(opt, ERROR);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("..");
+    ret = fork_prots_cd("..");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("oi");
+    ret = fork_prots_cd("oi");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou ERRO");
     CHECK_OPT(opt, ERROR);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 
     system("pwd");
-    fork_prots_cd("protocol_v2");
+    ret = fork_prots_cd("protocol_v2");
     CHECK(packet_recv(sock, buf, &opt), "server não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro. Esperado sucesso");
 }
 
-test_prots_mkdir()
+void test_prots_mkdir()
 {
-    fork_prots_mkdir("praxedes");
+    ret = fork_prots_mkdir("praxedes");
     CHECK(packet_recv(sock, buf, &opt), "servidor não enviou OK");
     CHECK_OPT(opt, OK);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro.");
     CHECK(system("ls praxedes") != 0 ? -1 : 0, "servidor não criou diretório.");
     // system("rm praxedes");
 
-    fork_prots_mkdir("praxedes");
+    // sleep(2);
+
+    ret = fork_prots_mkdir("praxedes");
     CHECK(packet_recv(sock, buf, &opt), "servidor não enviou ERRO");
     CHECK_OPT(opt, ERROR);
     CHECK_CHILD(RETURN_SUCCESS, "servidor retornou com erro.");
 
-    system("rm praxedes");
+    system("rm -rf praxedes");
+}
+
+void test_prots_ls()
+{
+    fork_prots_ls("");
 }
 
 int main()

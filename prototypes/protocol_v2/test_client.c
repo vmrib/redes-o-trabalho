@@ -8,6 +8,7 @@
 #include "packet.h"
 #include "prot_client.h"
 #include "debug.h"
+#include "error.h"
 
 #define TIMEOUT (uint)1e6
 
@@ -57,7 +58,7 @@ void test_protc_cd()
         {
             int childsock = rs_socket("lo");
             rs_set_timeout(childsock, TIMEOUT);
-            int err = prots_cd(childsock, "panzerkampfwagen");
+            int err = protc_cd(childsock, "panzerkampfwagen");
             exit(err);
         }
     }
@@ -74,7 +75,7 @@ void test_protc_cd()
     fork_protc_cd();
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou CD");
     CHECK_OPT(opt, CD);
-    CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
+    CHECK(packet_error(sock, ENODIR, 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber ERROR");
     printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR\n");
 
@@ -135,7 +136,7 @@ void test_protc_mkdir()
     fork_protc_mkdir();
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou MKDIR");
     CHECK_OPT(opt, MKDIR);
-    CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
+    CHECK(packet_error(sock, EALREADYDIR, 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_cd terminou com sucesso ao receber ERROR");
     printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR\n");
 
@@ -227,7 +228,7 @@ void test_protc_ls()
     fork_protc_ls();
     CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou LS");
     CHECK_OPT(opt, LS);
-    CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
+    CHECK(packet_error(sock, EPERMISSION, 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
     printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR (1)\n");
 
@@ -244,7 +245,7 @@ void test_protc_ls()
         CHECK(packet_recv(sock, buf, &opt), "cliente nao enviou ACK");
         CHECK_OPT(opt, ACK);
     }
-    CHECK(packet_error(sock, "baka", 0), "nao foi possivel enviar ERROR");
+    CHECK(packet_error(sock, ENODIR, 0), "nao foi possivel enviar ERROR");
     CHECK_CHILD(-1, "protc_ls terminou com sucesso. Esperado erro");
     printf("%s: %s\n", __FUNCTION__, "passou no teste ERROR (2)\n");
 

@@ -1,4 +1,8 @@
 all:
+	gcc -Wall -DNDEBUG -DNOLOOPBACK -std=gnu17 client.c raw_socket.c prot_client.c packet.c error.c -o client
+	gcc -Wall -DNDEBUG -DNOLOOPBACK -std=gnu17 server.c raw_socket.c prot_server.c packet.c error.c -o server
+
+debug:
 	gcc -Wall -std=gnu17 client.c raw_socket.c prot_client.c packet.c error.c -o client
 	gcc -Wall -std=gnu17 server.c raw_socket.c prot_server.c packet.c error.c -o server
 

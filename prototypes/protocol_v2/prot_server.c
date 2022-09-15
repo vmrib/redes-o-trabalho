@@ -57,55 +57,42 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
     }
 
     /* Read the output a line at a time - output it. */
-    while (fgets(path, sizeof(path), fp) != NULL)
+    // while (fgets(path, sizeof(path), fp) != NULL)
+    fgets(path, sizeof(path), fp);
+    while (1)
     {
         // printf("%ld\n", strlen(path));
         // path[strlen(path)-1] = '    ';
         printf("outro\n");
         s_index++;
         // printf("index: %d\n", s_index);
-        do
-        {
-            printf("mandou\n");
-            opt.index = s_index;
-            opt.size = strlen(path) + 1;
-            opt.type = SHOW;
-            TRY(packet_send(sockfd, path, opt));
-            printf("\nMensagem enviada: %s", path);
-            // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
-            if (opt.type == EMPTY)
-                printf("Tipo: EMPTY\n");
-            else if (opt.type == SHOW)
-                printf("Tipo: SHOW\n");
-            else if (opt.type == ACK)
-                printf("Tipo: ACK\n");
-            else
-                printf("Tipo: %u\n", opt.type);
+        printf("mandou\n");
+        opt.index = s_index;
+        opt.size = strlen(path) + 1;
+        opt.type = SHOW;
+        TRY(packet_send(sockfd, path, opt));
+        
+        printf("\nMensagem enviada: %s", path);
+        // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
+        if (opt.type == EMPTY)
+            printf("Tipo: EMPTY\n");
+        else if (opt.type == SHOW)
+            printf("Tipo: SHOW\n");
+        else if (opt.type == ACK)
+            printf("Tipo: ACK\n");
+        else
+            printf("Tipo: %u\n", opt.type);
 
-            packet_reset(&opt);
+        if(packet_recv(sockfd, buf, &opt) == -1)
+            if(errno == ETIMEDOUT)
+                continue;
 
-            // while (packet_recv(sockfd, buf, &opt) != -1){printf("aqui\n");}
-            // while (packet_recv(sockfd, buf, &opt) == -1){}
-            while (opt.type != ACK)
-            {
-                // while (packet_recv(sockfd, buf, &opt) == -1){}
-                TRY(packet_recv(sockfd, buf, &opt));
-                printf("\nMensagem recebida: %s", buf);
-                // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
-                if (opt.type == EMPTY)
-                    printf("Tipo: EMPTY\n");
-                else if (opt.type == SHOW)
-                    printf("Tipo: SHOW\n");
-                else if (opt.type == ACK)
-                    printf("Tipo: ACK\n");
-                else
-                    printf("Tipo: %u\n", opt.type);
-                s_index = opt.index;
-                // printf("index: %d\n", s_index);
-                // if(opt.type == SHOW) continue;
-            }
-            // s_index++;
-        } while (opt.type == NACK); // timeout
+        if(opt.type == ACK)
+            fgets(path, sizeof(path), fp);
+
+
+        packet_reset(&opt);
+
     }
 
     TRY(packet_end(sockfd, s_index));

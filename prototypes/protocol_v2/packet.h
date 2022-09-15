@@ -2,7 +2,7 @@
 
 #include <sys/types.h>
 
-#define PACKET_DATA_MAX_SIZE 63
+#define PACKET_DATA_MAX_SIZE 58
 
 typedef enum
 {

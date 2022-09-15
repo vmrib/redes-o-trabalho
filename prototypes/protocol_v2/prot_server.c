@@ -139,8 +139,8 @@ int prots_mkdir(int sockfd, char *dirname) // retorna OK, NACK ou ERRO
 
 int prots_get(int sockfd, char *dirname)
 {
-    packet_options_t opt;
-    char buf[PACKET_DATA_MAX_SIZE];
+    packet_options_t opt, data_opt;
+    char buf[PACKET_DATA_MAX_SIZE], data_buf[PACKET_DATA_MAX_SIZE];
 
     FILE *file = fopen(dirname, "rb");
 
@@ -168,14 +168,14 @@ int prots_get(int sockfd, char *dirname)
         return RETURN_SUCCESS;
     }
 
-    while (opt.size = fread(buf, sizeof(char), PACKET_DATA_MAX_SIZE - 5, file))
+    while (opt.size = fread(buf, sizeof(char), PACKET_DATA_MAX_SIZE, file))
     {
         opt.type = DATA;
         opt.index = s_index;
         TRY(packet_send(sockfd, buf, opt));
 
         TRY(packet_recv(sockfd, buf, &opt));
-        }
+    }
 }
 
 int prots_put(int sockfd, char *dirname)

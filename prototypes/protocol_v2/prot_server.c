@@ -160,6 +160,7 @@ int prots_get(int sockfd, char *dirname)
     opt.index = s_index;
     opt.size = sizeof(size_t);
     TRY(packet_send(sockfd, &filesize, opt));
+    s_index++;
 
     TRY(packet_recv(sockfd, buf, &opt));
 
@@ -168,14 +169,28 @@ int prots_get(int sockfd, char *dirname)
         return RETURN_SUCCESS;
     }
 
-    while (opt.size = fread(buf, sizeof(char), PACKET_DATA_MAX_SIZE, file))
+    data_opt.size = 1; // gambiarra
+
+    while (1)
     {
-        opt.type = DATA;
-        opt.index = s_index;
-        TRY(packet_send(sockfd, buf, opt));
+        data_opt.type = DATA;
+        data_opt.index = s_index;
+        TRY(packet_send(sockfd, data_buf, data_opt));
+        s_index++;
+
+        // enviou tudo que dava
+        if (opt.size == 0)
+            break;
 
         TRY(packet_recv(sockfd, buf, &opt));
+
+        if (opt.type != NACK)
+            continue;
+
+        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE, file);
     }
+
+    TRY(packet_end(sockfd, s_index));
 }
 
 int prots_put(int sockfd, char *dirname)

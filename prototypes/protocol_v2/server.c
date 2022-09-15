@@ -8,7 +8,7 @@
 
 int main(int argc, char const *argv[])
 {
-    int socket = rs_socket("lo");
+    int socket = rs_socket("enp2s0");
     char buf[1024];
     packet_options_t c;
 

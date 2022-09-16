@@ -180,6 +180,64 @@ int prots_get(int sockfd, char *dirname)
     TRY(packet_end(sockfd, s_index));
 }
 
-int prots_put(int sockfd, char *dirname)
+int prots_put(int sockfd, char *filename)
 {
+    packet_options_t opt;
+    char buf[PACKET_DATA_MAX_SIZE];
+
+
+    FILE *file = fopen(filename, "wb"); // seta errno
+    if (!file)
+    {
+        // converte erro de acesso da fopen() para erro de acesso do protocolo
+        if (errno == EACCES)
+            errno = EPERMISSION;
+
+        // tem que enviar o erro, nao retornar
+        // return RETURN_ERROR;
+    }
+
+    while (1)
+    {
+        do
+        {
+            // printf("pau\n");
+            // nao sei se precisa disso
+            packet_recv(sockfd, buf, &opt);
+
+            // acho que não acontece aqui, soh se ler o proprio nack??
+            while (opt.type == EMPTY)
+                packet_recv(sockfd, buf, &opt);
+            // printf("AQUI 2\n");
+            if (opt.type != DATA && opt.type != ENDTX)
+            {
+                debug((uint)opt.type);
+                packet_nack(sockfd, 0);
+                packet_reset(&opt);
+            }
+        } while (opt.type != DATA && opt.type != ENDTX);
+
+        // TRY(packet_recv(sockfd, buf, &opt));
+
+        // if (opt.type != DATA || opt.type != ENDTX)
+        //     return RETURN_ERROR;
+
+        if (opt.type == ENDTX)
+            break;
+
+        // se tipo == DATA
+        fwrite(buf, sizeof(char), opt.size, file);
+
+        packet_ack(sockfd, 0);
+
+        // reset??
+        packet_reset(&opt);
+    }
+
+    fclose(file);
+
+    //     if (opt.type == ERROR)
+    //         return -1;
+
+    return RETURN_SUCCESS;
 }

@@ -60,6 +60,10 @@ int main(int argc, char const *argv[])
             prots_get(socket, buf);
             break;
 
+        case (PUT):
+            prots_put(socket, buf);
+            break;
+
         default:
             break;
         }

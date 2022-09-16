@@ -442,11 +442,11 @@ int protc_put(int sockfd, char *filename)
 
     } while (opt.type == NACK);
 
-    if (opt.type == ERROR)
-    {
-        errno = buf[0];
-        return RETURN_ERROR;
-    }
+    // if (opt.type == ERROR)
+    // {
+    //     errno = buf[0];
+    //     return RETURN_ERROR;
+    // }
 
     fclose(file);
 

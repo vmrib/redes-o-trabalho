@@ -17,7 +17,7 @@ int protc_cd(int sockfd, char *dirname)
 
     do
     {
-        printf("cd\n");
+        // printf("cd\n");
         opt.index = 0;
         opt.size = strlen(dirname) + 1;
         opt.type = CD;
@@ -310,7 +310,7 @@ int protc_get(int sockfd, char *filename)
         if (opt.type == ENDTX)
             break;
 
-        write(STDOUT_FILENO, buf, opt.size);
+        // write(STDOUT_FILENO, buf, opt.size);
         fwrite(buf, sizeof(char), opt.size, file);
 
         TRY(packet_ack(sockfd, 0));
@@ -380,7 +380,7 @@ int protc_put(int sockfd, char *filename)
         c_index++;
 
         // printf(" ================================== \n");
-        TRY(packet_recv(sockfd, buf, &opt));
+        // TRY(packet_recv(sockfd, buf, &opt));
         // printf(" ================================== \n");
 
     } while (opt.type == NACK);

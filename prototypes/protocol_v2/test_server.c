@@ -93,6 +93,17 @@ void fork_prots_ls(const char *flag)
     }
 }
 
+void fork_prots_get(const char *dir)
+{
+    if (fork() == 0) // child
+    {
+        int childsock = rs_socket("lo");
+        rs_set_timeout(childsock, TIMEOUT);
+        int err = prots_get(childsock, dir);
+        exit(err);
+    }
+}
+
 void test_prots_cd()
 {
     system("pwd");
@@ -184,6 +195,33 @@ void test_prots_ls()
         CHECK(packet_ack(sock, 0), "não foi possível enviar ACK.");
 
     } while (1);
+    
+    CHECK_CHILD2(RETURN_SUCCESS, "servidor retornou com erro.");
+}
+
+void test_prots_get()
+{
+    fork_prots_get("TODO");
+    CHECK(packet_recv(sock, buf, &opt), "servidor não enviou FDESC");
+    CHECK_OPT(opt, FDESC);
+    size_t tam;
+    memcpy(&tam, buf, sizeof(size_t));
+    printf("get: tamanho = %lu\n", tam);
+    CHECK(packet_ok(sock, 0), "não foi possível enviar mensagem OK");
+    
+    while (1)
+    {
+        CHECK(packet_recv(sock, buf, &opt), "servidor não enviou DATA/ENDTX");
+        
+        if (opt.type == ENDTX)
+            break;
+            
+        CHECK_OPT(opt, DATA);
+        write(STDOUT_FILENO, buf, opt.size);
+        CHECK(packet_ack(sock, 0), "não foi possível enviar ACK");
+    }
+    
+    CHECK_CHILD2(RETURN_SUCCESS, "servidor retornou com erro");
 }
 
 int main()
@@ -200,9 +238,9 @@ int main()
     printf("========== Testando prots_ls() ===========\n");
     test_prots_ls();
     printf("========== prots_ls() OK! YAY! ==========\n\n");
-    // printf("========== Testando prots_get() =========\n");
-    // test_prots_get();
-    // printf("========== prots_get() OK! YAY! =========\n\n");
+    printf("========== Testando prots_get() =========\n");
+    test_prots_get();
+    printf("========== prots_get() OK! YAY! =========\n\n");
     // printf("========== Testando prots_put() =========\n");
     // test_prots_put();
     // printf("========== prots_put() OK! YAY! =========\n\n");

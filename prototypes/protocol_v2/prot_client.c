@@ -223,11 +223,13 @@ int protc_get(int sockfd, char *filename)
         opt.size = strlen(filename) + 1;
         opt.type = GET;
         TRY(packet_send(sockfd, filename, opt));
+        printf("enviada: %d", opt.type);
         c_index++;
 
         // printf(" ================================== \n");
         // recebe tamanho do arquivo
         TRY(packet_recv(sockfd, buf, &opt));
+        printf("recebida: %d", opt.type);
         // printf(" ================================== \n");
 
     } while (opt.type == NACK);
@@ -241,7 +243,14 @@ int protc_get(int sockfd, char *filename)
     // TRY(packet_recv(sockfd, buf, &opt));
     if (opt.type != FDESC)
     {
+        printf("!FDESC\n");
         errno = EINTEGRITY;
+        // return RETURN_ERROR;
+    }
+
+    if (opt.type == ERROR)
+    {
+        errno = ENOFILE;
         return RETURN_ERROR;
     }
 
@@ -268,10 +277,14 @@ int protc_get(int sockfd, char *filename)
             // printf("pau\n");
             // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
+            printf("recebida: %d", opt.type);
 
             // nao vai acontecer?
             while (opt.type == EMPTY)
+            {
                 TRY(packet_recv(sockfd, buf, &opt));
+                printf("recebida: %d", opt.type);
+            }
             // printf("AQUI 2\n");
 
             // isso deveria ser soh no timeout na verdade? (if (timeout)...)
@@ -287,9 +300,12 @@ int protc_get(int sockfd, char *filename)
         // if (opt.type != DATA || opt.type != ENDTX)
         //     return RETURN_ERROR;
 
+        printf("Mensagem recebida tipo: %d\n", opt.type);
+
         if (opt.type == ENDTX)
             break;
 
+        write(STDOUT_FILENO, buf, opt.size);
         fwrite(buf, sizeof(char), opt.size, file);
 
         TRY(packet_ack(sockfd, 0));

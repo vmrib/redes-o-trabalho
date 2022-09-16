@@ -1,6 +1,7 @@
 #include "prot_server.h"
 #include "packet.h"
 #include "error.h"
+#include "debug.h"
 #include <unistd.h> // chdir
 #include <errno.h>
 #include <stdlib.h>
@@ -156,10 +157,11 @@ int prots_get(int sockfd, char *dirname)
         return RETURN_SUCCESS;
     }
 
-    data_opt.size = 1; // gambiarra
+    // data_opt.size = 1; // gambiarra
 
     while (1)
     {
+        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE, file);
         data_opt.type = DATA;
         data_opt.index = s_index;
         TRY(packet_send(sockfd, data_buf, data_opt));
@@ -168,16 +170,22 @@ int prots_get(int sockfd, char *dirname)
         // enviou tudo que dava
         if (opt.size == 0)
             break;
-
+            
         TRY(packet_recv(sockfd, buf, &opt));
-
-        if (opt.type != NACK)
-            continue;
-
-        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE, file);
+        while (opt.type == NACK)
+        {
+            TRY(packet_send(sockfd, data_buf, data_opt));
+            s_index++;
+            TRY(packet_recv(sockfd, buf, &opt));
+        }
+            
+        // if (opt.type == NACK)
+        //     continue;
     }
 
     TRY(packet_end(sockfd, s_index));
+    
+    return RETURN_SUCCESS;
 }
 
 int prots_put(int sockfd, char *filename)

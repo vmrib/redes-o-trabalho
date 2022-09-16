@@ -54,18 +54,18 @@ int packet_send(int sockfd, void *data, packet_options_t options)
     //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
     // }
 
-    printf("Mensagem enviada tipo: %u\n", env.type);
-    printf("Paridade enviada: %u\n", env.parity);
+    // printf("Mensagem enviada tipo: %u\n", env.type);
+    // printf("Paridade enviada: %u\n", env.parity);
 
-    printf("buf sent: ");
-    for (size_t i = 0; i < buf_size; i++)
-    {
-        printf("%X ", buf[i]);
-    }
-    printf("\n");
+    // printf("buf sent: ");
+    // for (size_t i = 0; i < buf_size; i++)
+    // {
+    //     printf("%X ", buf[i]);
+    // }
+    // printf("\n");
 
-    printf("parity sent: 0x%X\n", env.parity);
-    printf("size sent: 0x%X\n", env.size);
+    // printf("parity sent: 0x%X\n", env.parity);
+    // printf("size sent: 0x%X\n", env.size);
 
     // tenta enviar até conseguir
     while (rs_send(sockfd, buf, buf_size) == RETURN_ERROR)
@@ -139,7 +139,7 @@ recieve:
         goto recieve;
     }
 
-    printf("Mensagem recebida tipo: %u\n", env.type);
+    // printf("Mensagem recebida tipo: %u\n", env.type);
 
     memcpy(data, buf + sizeof(envelope_t) - 1, env.size);
     options->size = env.size;

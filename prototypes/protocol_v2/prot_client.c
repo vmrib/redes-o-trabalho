@@ -437,7 +437,7 @@ int protc_put(int sockfd, char *filename)
         TRY(packet_end(sockfd, 0));
 
         // printf(" ================================== \n");
-        TRY(packet_recv(sockfd, buf, &opt));
+        // TRY(packet_recv(sockfd, buf, &opt));
         // printf(" ================================== \n");
 
     } while (opt.type == NACK);

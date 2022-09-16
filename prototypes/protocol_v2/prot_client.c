@@ -422,7 +422,7 @@ int protc_put(int sockfd, char *filename)
         // memcpy(last_buf, buf, opt.size);
         // last_opt = opt;
 
-        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE, file);
+        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE - 10, file);
         data_opt.index = 0;
         data_opt.type = DATA;
         TRY(packet_send(sockfd, data_buf, data_opt));

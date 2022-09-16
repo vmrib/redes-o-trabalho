@@ -223,6 +223,8 @@ int prots_put(int sockfd, char *filename)
         return RETURN_ERROR;
     }
 
+    printf("put arquivo: %s\n", filename);
+
     TRY(packet_ok(sockfd, s_index));
     s_index++;
 

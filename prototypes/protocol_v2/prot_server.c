@@ -125,37 +125,41 @@ int prots_mkdir(int sockfd, char *dirname) // retorna OK, NACK ou ERRO
     return RETURN_SUCCESS;
 }
 
-int prots_get(int sockfd, char *dirname)
+int prots_get(int sockfd, char *filename)
 {
     packet_options_t opt, data_opt;
     char buf[PACKET_DATA_MAX_SIZE], data_buf[PACKET_DATA_MAX_SIZE];
 
-    FILE *file = fopen(dirname, "rb");
+    FILE *file = fopen(filename, "rb");
 
     if (file == NULL)
     {
         TRY(packet_error(sockfd, ENOFILE, s_index));
         s_index++;
-        printf("get: %s\n", dirname);
+        printf("get: %s\n", filename);
         return RETURN_SUCCESS;
     }
 
+    // pegar tamanho do arquivo
     fseek(file, 0, SEEK_END);      // seek to end of file
     size_t filesize = ftell(file); // get current file pointer
     fseek(file, 0, SEEK_SET);      // seek back to beginning of file
 
-    opt.type = FDESC;
-    opt.index = s_index;
-    opt.size = sizeof(size_t);
-    TRY(packet_send(sockfd, &filesize, opt));
-    s_index++;
-
-    TRY(packet_recv(sockfd, buf, &opt));
-
-    if (opt.type == ERROR) // cliente deu pau, a gente só aceita
+    do
     {
-        return RETURN_SUCCESS;
-    }
+        opt.type = FDESC;
+        opt.index = s_index;
+        opt.size = sizeof(size_t);
+        TRY(packet_send(sockfd, &filesize, opt));
+        s_index++;
+
+        TRY(packet_recv(sockfd, buf, &opt));
+
+        if (opt.type == ERROR) // cliente deu pau, a gente só aceita
+        {
+            return RETURN_SUCCESS;
+        }
+    } while (opt.type != OK);
 
     // data_opt.size = 1; // gambiarra
 
@@ -168,9 +172,10 @@ int prots_get(int sockfd, char *dirname)
         s_index++;
 
         // enviou tudo que dava
+        // como assim? pq data_opt em outros lugares?
         if (opt.size == 0)
             break;
-            
+
         TRY(packet_recv(sockfd, buf, &opt));
         while (opt.type == NACK)
         {
@@ -178,13 +183,13 @@ int prots_get(int sockfd, char *dirname)
             s_index++;
             TRY(packet_recv(sockfd, buf, &opt));
         }
-            
+
         // if (opt.type == NACK)
         //     continue;
     }
 
     TRY(packet_end(sockfd, s_index));
-    
+
     return RETURN_SUCCESS;
 }
 
@@ -192,7 +197,6 @@ int prots_put(int sockfd, char *filename)
 {
     packet_options_t opt;
     char buf[PACKET_DATA_MAX_SIZE];
-
 
     FILE *file = fopen(filename, "wb"); // seta errno
     if (!file)

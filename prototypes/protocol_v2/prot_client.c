@@ -226,6 +226,7 @@ int protc_get(int sockfd, char *filename)
         c_index++;
 
         // printf(" ================================== \n");
+        // recebe tamanho do arquivo
         TRY(packet_recv(sockfd, buf, &opt));
         // printf(" ================================== \n");
 
@@ -253,10 +254,11 @@ int protc_get(int sockfd, char *filename)
         if (errno == EACCES)
             errno = EPERMISSION;
 
-        return RETURN_ERROR;
+        // enviar mensagem de erro
+        // return RETURN_ERROR;
     }
 
-    TRY(packet_ok(sockfd, 0));
+    TRY(packet_ok(sockfd, 0));   
     // printf("AQUI 1\n");
 
     while (1)
@@ -267,9 +269,12 @@ int protc_get(int sockfd, char *filename)
             // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
 
+            // nao vai acontecer?
             while (opt.type == EMPTY)
                 TRY(packet_recv(sockfd, buf, &opt));
             // printf("AQUI 2\n");
+
+            // isso deveria ser soh no timeout na verdade? (if (timeout)...)
             if (opt.type != DATA && opt.type != ENDTX)
             {
                 debug((uint)opt.type);

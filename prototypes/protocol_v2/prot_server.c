@@ -140,10 +140,14 @@ int prots_get(int sockfd, char *filename)
         return RETURN_SUCCESS;
     }
 
+    printf("get: %s\n", filename);
+
     // pegar tamanho do arquivo
     fseek(file, 0, SEEK_END);      // seek to end of file
     size_t filesize = ftell(file); // get current file pointer
     fseek(file, 0, SEEK_SET);      // seek back to beginning of file
+
+    printf("tamanho: %lu\n", filesize);
 
     do
     {
@@ -152,6 +156,8 @@ int prots_get(int sockfd, char *filename)
         opt.size = sizeof(size_t);
         TRY(packet_send(sockfd, &filesize, opt));
         s_index++;
+
+        printf("Enviado FDESC\n");
 
         TRY(packet_recv(sockfd, buf, &opt));
 
@@ -171,9 +177,14 @@ int prots_get(int sockfd, char *filename)
         TRY(packet_send(sockfd, data_buf, data_opt));
         s_index++;
 
+        printf("Enviado DATA com tamanho %u.\n", data_opt.size);
+        printf("==========================\n");
+        write(STDOUT_FILENO, data_buf, data_opt.size);
+        printf("==========================\n");
+
         // enviou tudo que dava
         // como assim? pq data_opt em outros lugares?
-        if (opt.size == 0)
+        if (data_opt.size == 0)
             break;
 
         TRY(packet_recv(sockfd, buf, &opt));
@@ -189,6 +200,7 @@ int prots_get(int sockfd, char *filename)
     }
 
     TRY(packet_end(sockfd, s_index));
+    printf("Enviado ENDTX\n");
 
     return RETURN_SUCCESS;
 }

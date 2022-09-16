@@ -1,4 +1,5 @@
 #include <string.h>
+#include <stdio.h>
 
 #include "debug.h"
 #include "error.h"
@@ -54,6 +55,7 @@ int packet_send(int sockfd, void *data, packet_options_t options)
     // }
 
     // printf("buf sent: ");
+    printf("Mensagem enviada tipo: %u\n", env.type);
 
     // for (size_t i = 0; i < buf_size; i++)
     // {
@@ -63,9 +65,11 @@ int packet_send(int sockfd, void *data, packet_options_t options)
 
     // printf("parity sent: 0x%X\n", env.parity);
     // printf("size sent: 0x%X\n", env.size);
-    
-    // tenta enviar até conseguir 
-    while (rs_send(sockfd, buf, buf_size) == RETURN_ERROR) {}
+
+    // tenta enviar até conseguir
+    while (rs_send(sockfd, buf, buf_size) == RETURN_ERROR)
+    {
+    }
 
     return RETURN_SUCCESS;
 }
@@ -79,10 +83,14 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     //     rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE); // descarta echo do loopback
     //     // printf("buf: %s\n", buf);
     // #endif
-    
-    // tenta receber até c9nseguir
-    recieve:
-    while (rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE) == RETURN_ERROR) {}
+
+    printf("Aguardando receber...\n");
+
+// tenta receber até c9nseguir
+recieve:
+    while (rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE) == RETURN_ERROR)
+    {
+    }
     // printf("buf read: %s\n", buf);
 
     // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
@@ -96,6 +104,8 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     //     printf("%X ", buf[i]);
     // }
     // printf("\n");
+
+    printf("Mensagem recebida tipo: %u\n", env.type);
 
     memcpy(&env, buf, sizeof(envelope_t) - 1);
     if (env.start_marker != PACKET_START_MARKER)

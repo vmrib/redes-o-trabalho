@@ -126,7 +126,7 @@ recieve:
         // debug((uint)env.size);
         //         printf("bla %u\n", buf + sizeof(envelope_t) - 1);
         // write(STDOUT_FILENO, buf + sizeof(envelope_t) - 1, env.size);
-        // printf("IF 2\n");
+        packet_nack(sockfd, 0);
         // errno = EINTEGRITY;
         // return RETURN_ERROR;
         goto recieve;

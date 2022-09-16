@@ -85,7 +85,7 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     //     // printf("buf: %s\n", buf);
     // #endif
 
-    printf("Aguardando receber...\n");
+    // printf("Aguardando receber...\n");
 
 // tenta receber até c9nseguir
 recieve:

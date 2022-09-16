@@ -44,7 +44,7 @@ int main(int argc, char const *argv[])
         switch (c.type)
         {
         case (LS):
-            printf("chamando todos os cornos\a\n");
+            // printf("chamando todos os cornos\a\n");
             prots_ls(socket, buf);
             break;
 

@@ -59,6 +59,7 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
 
     /* Read the output a line at a time - output it. */
     // while (fgets(path, sizeof(path), fp) != NULL)
+    path[0] = '\0';
     fgets(path, sizeof(path), fp);
     while (1)
     {
@@ -72,6 +73,7 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
         opt.size = strlen(path) + 1;
         opt.type = SHOW;
         TRY(packet_send(sockfd, path, opt));
+        path[0] = '\0';
 
         printf("\nMensagem enviada: %s", path);
         // printf("Tamanho: %u\nTipo: %u \nIndex = %u\n", opt.size, opt.type, opt.index);
@@ -171,11 +173,13 @@ int prots_get(int sockfd, char *filename)
 
     while (1)
     {
-        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE - 10, file);
+        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE - 20, file);
         data_opt.type = DATA;
         data_opt.index = s_index;
         TRY(packet_send(sockfd, data_buf, data_opt));
         s_index++;
+
+        printf("get: Enviado dados %u\n", s_index);
 
         // printf("Enviado DATA com tamanho %u.\n", data_opt.size);
         // printf("==========================\n");

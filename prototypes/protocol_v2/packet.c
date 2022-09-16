@@ -91,6 +91,8 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
 recieve:
     while (rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE) == RETURN_ERROR)
     {
+        if (errno == ETIMEDOUT)
+            packet_nack(sockfd, 0);
     }
     // printf("buf read: %s\n", buf);
 

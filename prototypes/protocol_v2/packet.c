@@ -123,6 +123,12 @@ recieve:
         // #include <unistd.h>
         // debug((uint)env.parity);
         // debug(calc_parity(buf + sizeof(envelope_t) - 1, env.size));
+        printf("env.parity = %u. calc_parity = %u\n", env.parity, calc_parity(buf + sizeof(envelope_t) - 1, env.size));
+        for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
+        {
+            printf("%X ", buf[i]);
+        }
+        printf("\n");
         // debug((uint)env.size);
         //         printf("bla %u\n", buf + sizeof(envelope_t) - 1);
         // write(STDOUT_FILENO, buf + sizeof(envelope_t) - 1, env.size);

@@ -54,14 +54,15 @@ int packet_send(int sockfd, void *data, packet_options_t options)
     //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
     // }
 
-    // printf("buf sent: ");
     printf("Mensagem enviada tipo: %u\n", env.type);
+    printf("Paridade enviada: %u\n", env.parity);
 
-    // for (size_t i = 0; i < buf_size; i++)
-    // {
-    //     printf("%X ", buf[i]);
-    // }
-    // printf("\n");
+    printf("buf sent: ");
+    for (size_t i = 0; i < buf_size; i++)
+    {
+        printf("%X ", buf[i]);
+    }
+    printf("\n");
 
     // printf("parity sent: 0x%X\n", env.parity);
     // printf("size sent: 0x%X\n", env.size);

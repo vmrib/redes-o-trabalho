@@ -223,13 +223,13 @@ int protc_get(int sockfd, char *filename)
         opt.size = strlen(filename) + 1;
         opt.type = GET;
         TRY(packet_send(sockfd, filename, opt));
-        printf("enviada: %d", opt.type);
+        printf("enviada: %d\n", opt.type);
         c_index++;
 
         // printf(" ================================== \n");
         // recebe tamanho do arquivo
         TRY(packet_recv(sockfd, buf, &opt));
-        printf("recebida: %d", opt.type);
+        printf("recebida: %d\n", opt.type);
         // printf(" ================================== \n");
 
     } while (opt.type == NACK);
@@ -264,7 +264,10 @@ int protc_get(int sockfd, char *filename)
             errno = EPERMISSION;
 
         // enviar mensagem de erro
-        // return RETURN_ERROR;
+        opt.type = ERROR;
+        TRY(packet_error(sockfd, EPERMISSION, c_index));
+
+        return RETURN_ERROR;
     }
 
     TRY(packet_ok(sockfd, 0));   
@@ -272,18 +275,20 @@ int protc_get(int sockfd, char *filename)
 
     while (1)
     {
+        printf("while\n");
         do
         {
+            printf("dowhile\n");
             // printf("pau\n");
             // nao sei se precisa disso
             TRY(packet_recv(sockfd, buf, &opt));
-            printf("recebida: %d", opt.type);
+            printf("recebida: %d\n", opt.type);
 
             // nao vai acontecer?
             while (opt.type == EMPTY)
             {
                 TRY(packet_recv(sockfd, buf, &opt));
-                printf("recebida: %d", opt.type);
+                printf("recebida: %d\n", opt.type);
             }
             // printf("AQUI 2\n");
 
@@ -300,7 +305,7 @@ int protc_get(int sockfd, char *filename)
         // if (opt.type != DATA || opt.type != ENDTX)
         //     return RETURN_ERROR;
 
-        printf("Mensagem recebida tipo: %d\n", opt.type);
+        printf("recebida fora dowhile: %d\n", opt.type);
 
         if (opt.type == ENDTX)
             break;

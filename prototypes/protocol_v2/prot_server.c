@@ -64,10 +64,10 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
     {
         // printf("%ld\n", strlen(path));
         // path[strlen(path)-1] = '    ';
-        printf("outro\n");
+        // printf("outro\n");
         s_index++;
         // printf("index: %d\n", s_index);
-        printf("mandou\n");
+        // printf("mandou\n");
         opt.index = s_index;
         opt.size = strlen(path) + 1;
         opt.type = SHOW;
@@ -96,9 +96,9 @@ int prots_ls(int sockfd, char *flag) // retorna NACK, ERRO ou MOSTRA NA TELA
     }
 
     TRY(packet_end(sockfd, s_index));
-    printf("FIM DO PACOTE CARAI\n");
+    // printf("FIM DO PACOTE\n");
     s_index++;
-    printf("index: %d\n", s_index);
+    // printf("index: %d\n", s_index);
 
     packet_reset(&opt);
 
@@ -177,10 +177,10 @@ int prots_get(int sockfd, char *filename)
         TRY(packet_send(sockfd, data_buf, data_opt));
         s_index++;
 
-        printf("Enviado DATA com tamanho %u.\n", data_opt.size);
-        printf("==========================\n");
-        write(STDOUT_FILENO, data_buf, data_opt.size);
-        printf("==========================\n");
+        // printf("Enviado DATA com tamanho %u.\n", data_opt.size);
+        // printf("==========================\n");
+        // write(STDOUT_FILENO, data_buf, data_opt.size);
+        // printf("==========================\n");
 
         // enviou tudo que dava
         // como assim? pq data_opt em outros lugares?
@@ -191,7 +191,7 @@ int prots_get(int sockfd, char *filename)
         while (opt.type == NACK)
         {
             TRY(packet_send(sockfd, data_buf, data_opt));
-            printf("data_opt.size: %u", data_opt.size);
+            // printf("data_opt.size: %u", data_opt.size);
             s_index++;
             TRY(packet_recv(sockfd, buf, &opt));
         }
@@ -201,7 +201,7 @@ int prots_get(int sockfd, char *filename)
     }
 
     TRY(packet_end(sockfd, s_index));
-    printf("Enviado ENDTX\n");
+    // printf("Enviado ENDTX\n");
 
     return RETURN_SUCCESS;
 }

@@ -171,7 +171,7 @@ int prots_get(int sockfd, char *filename)
 
     while (1)
     {
-        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE, file);
+        data_opt.size = fread(data_buf, sizeof(char), PACKET_DATA_MAX_SIZE - 10, file);
         data_opt.type = DATA;
         data_opt.index = s_index;
         TRY(packet_send(sockfd, data_buf, data_opt));
@@ -191,6 +191,7 @@ int prots_get(int sockfd, char *filename)
         while (opt.type == NACK)
         {
             TRY(packet_send(sockfd, data_buf, data_opt));
+            printf("data_opt.size: %u", data_opt.size);
             s_index++;
             TRY(packet_recv(sockfd, buf, &opt));
         }
@@ -217,9 +218,27 @@ int prots_put(int sockfd, char *filename)
         if (errno == EACCES)
             errno = EPERMISSION;
 
+        packet_error(sockfd, EPERMISSION, s_index);
         // tem que enviar o erro, nao retornar
-        // return RETURN_ERROR;
+        return RETURN_ERROR;
     }
+
+    TRY(packet_ok(sockfd, s_index));
+    s_index++;
+
+    while (1)
+    {
+        TRY(packet_recv(sockfd, buf, &opt));
+
+        if (opt.type == FDESC)
+            break;
+
+        TRY(packet_nack(sockfd, s_index));
+        s_index++;
+    }
+
+    TRY(packet_ok(sockfd, s_index));
+    s_index++;
 
     while (1)
     {
@@ -230,15 +249,15 @@ int prots_put(int sockfd, char *filename)
             packet_recv(sockfd, buf, &opt);
 
             // acho que não acontece aqui, soh se ler o proprio nack??
-            while (opt.type == EMPTY)
-                packet_recv(sockfd, buf, &opt);
+            // while (opt.type == EMPTY)
+            //     packet_recv(sockfd, buf, &opt);
             // printf("AQUI 2\n");
-            if (opt.type != DATA && opt.type != ENDTX)
-            {
-                debug((uint)opt.type);
-                packet_nack(sockfd, 0);
-                packet_reset(&opt);
-            }
+            // if (opt.type != DATA && opt.type != ENDTX)
+            // {
+            //     debug((uint)opt.type);
+            //     packet_nack(sockfd, 0);
+            //     packet_reset(&opt);
+            // }
         } while (opt.type != DATA && opt.type != ENDTX);
 
         // TRY(packet_recv(sockfd, buf, &opt));
@@ -252,10 +271,11 @@ int prots_put(int sockfd, char *filename)
         // se tipo == DATA
         fwrite(buf, sizeof(char), opt.size, file);
 
-        packet_ack(sockfd, 0);
+        TRY(packet_ack(sockfd, 0));
+        s_index++;
 
         // reset??
-        packet_reset(&opt);
+        // packet_reset(&opt);
     }
 
     fclose(file);

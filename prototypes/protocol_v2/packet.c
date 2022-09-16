@@ -105,8 +105,6 @@ recieve:
     // }
     // printf("\n");
 
-    printf("Mensagem recebida tipo: %u\n", env.type);
-
     memcpy(&env, buf, sizeof(envelope_t) - 1);
     if (env.start_marker != PACKET_START_MARKER)
     {
@@ -133,6 +131,8 @@ recieve:
         // return RETURN_ERROR;
         goto recieve;
     }
+
+    printf("Mensagem recebida tipo: %u\n", env.type);
 
     memcpy(data, buf + sizeof(envelope_t) - 1, env.size);
     options->size = env.size;

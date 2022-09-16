@@ -54,15 +54,15 @@ int packet_send(int sockfd, void *data, packet_options_t options)
     //     printf("buf[%lu]: 0x%X\n", i, buf[i]);
     // }
 
-    printf("Mensagem enviada tipo: %u\n", env.type);
-    printf("Paridade enviada: %u\n", env.parity);
+    // printf("Mensagem enviada tipo: %u\n", env.type);
+    // printf("Paridade enviada: %u\n", env.parity);
 
-    printf("buf sent: ");
-    for (size_t i = 0; i < buf_size; i++)
-    {
-        printf("%X ", buf[i]);
-    }
-    printf("\n");
+    // printf("buf sent: ");
+    // for (size_t i = 0; i < buf_size; i++)
+    // {
+    //     printf("%X ", buf[i]);
+    // }
+    // printf("\n");
 
     // printf("parity sent: 0x%X\n", env.parity);
     // printf("size sent: 0x%X\n", env.size);
@@ -124,13 +124,13 @@ recieve:
         // #include <unistd.h>
         // debug((uint)env.parity);
         // debug(calc_parity(buf + sizeof(envelope_t) - 1, env.size));
-        printf("env.parity = %u. calc_parity = %u\n", env.parity, calc_parity(buf + sizeof(envelope_t) - 1, env.size));
-        for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
-        {
-            printf("%X ", buf[i]);
-        }
-        printf("\n");
-        // debug((uint)env.size);
+        // printf("env.parity = %u. calc_parity = %u\n", env.parity, calc_parity(buf + sizeof(envelope_t) - 1, env.size));
+        // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
+        // {
+        //     printf("%X ", buf[i]);
+        // }
+        // printf("\n");
+        // // debug((uint)env.size);
         //         printf("bla %u\n", buf + sizeof(envelope_t) - 1);
         // write(STDOUT_FILENO, buf + sizeof(envelope_t) - 1, env.size);
         packet_nack(sockfd, 0);
@@ -139,7 +139,7 @@ recieve:
         goto recieve;
     }
 
-    printf("Mensagem recebida tipo: %u\n", env.type);
+    // printf("Mensagem recebida tipo: %u\n", env.type);
 
     memcpy(data, buf + sizeof(envelope_t) - 1, env.size);
     options->size = env.size;

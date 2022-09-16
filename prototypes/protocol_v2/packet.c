@@ -63,8 +63,9 @@ int packet_send(int sockfd, void *data, packet_options_t options)
 
     // printf("parity sent: 0x%X\n", env.parity);
     // printf("size sent: 0x%X\n", env.size);
-
-    TRY(rs_send(sockfd, buf, buf_size));
+    
+    // tenta enviar até conseguir 
+    while (rs_send(sockfd, buf, buf_size) == RETURN_ERROR) {}
 
     return RETURN_SUCCESS;
 }
@@ -78,8 +79,10 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     //     rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE); // descarta echo do loopback
     //     // printf("buf: %s\n", buf);
     // #endif
-
-    rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE);
+    
+    // tenta receber até c9nseguir
+    recieve:
+    while (rs_recv(sockfd, buf, PACKET_DATA_MAX_SIZE) == RETURN_ERROR) {}
     // printf("buf read: %s\n", buf);
 
     // for (size_t i = 0; i < PACKET_DATA_MAX_SIZE; i++)
@@ -99,8 +102,9 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
     {
         // debug((uint)env.start_marker);
         // printf("IF 1\n");
-        errno = EINTEGRITY;
-        return RETURN_ERROR;
+        // errno = EINTEGRITY;
+        // return RETURN_ERROR;
+        goto recieve;
     }
 
     env.parity = buf[env.size + sizeof(envelope_t) - 1];
@@ -115,8 +119,9 @@ int packet_recv(int sockfd, void *data, packet_options_t *options)
         //         printf("bla %u\n", buf + sizeof(envelope_t) - 1);
         // write(STDOUT_FILENO, buf + sizeof(envelope_t) - 1, env.size);
         // printf("IF 2\n");
-        errno = EINTEGRITY;
-        return RETURN_ERROR;
+        // errno = EINTEGRITY;
+        // return RETURN_ERROR;
+        goto recieve;
     }
 
     memcpy(data, buf + sizeof(envelope_t) - 1, env.size);

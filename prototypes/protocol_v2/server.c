@@ -20,9 +20,9 @@ int main(int argc, char const *argv[])
 
     rs_set_timeout(socket, (uint)5e6);
 
-    char linha[64], comando[64], opt[10];
+    // char linha[64], comando[64], opt[10];
 
-    int ultimo = -1;
+    // int ultimo = -1;
     while (1)
     {
         packet_reset(&c);

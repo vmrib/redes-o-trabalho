@@ -13,7 +13,7 @@ uint s_index = 0;
 
 int prots_cd(int sockfd, const char *dirname) // retorna OK, NACK ou ERRO
 {
-    packet_options_t opt;
+    // packet_options_t opt;
     printf("%s\n", dirname);
     int resultado = chdir(dirname);
 
